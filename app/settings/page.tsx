@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
   User,
-  Mail,
   Lock,
   Camera,
   Save,
@@ -24,16 +23,63 @@ import {
   Settings,
   Heart,
   BookOpen,
-  Users,
   Award,
 } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import { createClient } from "@/utils/supabase/client"
 
 export default function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [profileImage, setProfileImage] = useState("/placeholder.svg?height=120&width=120")
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    bio: "",
+    email: "",
+    avatar_url: "",
+    num_recipes: 0,
+    rating: 0,
+  })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
+  const [profileError, setProfileError] = useState("")
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        setError("Not logged in")
+        return
+      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, bio, email, avatar_url, num_recipes, rating")
+        .eq("id", user.id)
+        .single()
+      if (error) {
+        setError("Failed to load profile")
+      } else if (data) {
+        setProfile({
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          bio: data.bio || "",
+          email: data.email || "",
+          avatar_url: data.avatar_url || "",
+          num_recipes: data.num_recipes ?? 0,
+          rating: data.rating ?? 0,
+        })
+        setProfileImage(data.avatar_url || "/placeholder.svg?height=120&width=120")
+      }
+      setLoading(false)
+    }
+    fetchProfile()
+  }, [])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -44,6 +90,42 @@ export default function SettingsPage() {
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setProfile((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setProfileError("")
+    if (!profile.firstName.trim() || !profile.lastName.trim()) {
+      setProfileError("First name and last name are required.")
+      return
+    }
+    setSaving(true)
+    setError("")
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setError("Not logged in")
+      setSaving(false)
+      return
+    }
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        bio: profile.bio,
+        avatar_url: profileImage,
+      })
+      .eq("id", user.id)
+    if (updateError) {
+      setError("Failed to update profile")
+    }
+    setSaving(false)
   }
 
   return (
@@ -72,7 +154,9 @@ export default function SettingsPage() {
                   <div className="relative mx-auto mb-4">
                     <Avatar className="h-24 w-24 mx-auto">
                       <AvatarImage src={profileImage || "/placeholder.svg"} alt="Profile" />
-                      <AvatarFallback className="bg-orange-100 text-orange-700 text-2xl">SJ</AvatarFallback>
+                      <AvatarFallback className="bg-orange-100 text-orange-700 text-2xl">
+                        {profile.firstName?.[0]?.toUpperCase() || ''}{profile.lastName?.[0]?.toUpperCase() || ''}
+                      </AvatarFallback>
                     </Avatar>
                     <label
                       htmlFor="profile-upload"
@@ -88,36 +172,22 @@ export default function SettingsPage() {
                       className="hidden"
                     />
                   </div>
-                  <CardTitle className="text-orange-900">Sarah Johnson</CardTitle>
-                  <CardDescription className="text-orange-600">Home Baker & Recipe Enthusiast</CardDescription>
+                  <CardTitle className="text-orange-900">{profile.firstName} {profile.lastName}</CardTitle>
+                  <CardDescription className="text-orange-600">{profile.email}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div className="bg-orange-50 rounded-lg p-3">
                       <div className="flex items-center justify-center mb-1">
                         <BookOpen className="h-4 w-4 text-orange-600 mr-1" />
-                        <span className="font-semibold text-orange-900">23</span>
+                        <span className="font-semibold text-orange-900">{profile.num_recipes}</span>
                       </div>
                       <p className="text-xs text-orange-600">Recipes</p>
                     </div>
                     <div className="bg-orange-50 rounded-lg p-3">
                       <div className="flex items-center justify-center mb-1">
-                        <Heart className="h-4 w-4 text-orange-600 mr-1" />
-                        <span className="font-semibold text-orange-900">1.2k</span>
-                      </div>
-                      <p className="text-xs text-orange-600">Likes</p>
-                    </div>
-                    <div className="bg-orange-50 rounded-lg p-3">
-                      <div className="flex items-center justify-center mb-1">
-                        <Users className="h-4 w-4 text-orange-600 mr-1" />
-                        <span className="font-semibold text-orange-900">456</span>
-                      </div>
-                      <p className="text-xs text-orange-600">Followers</p>
-                    </div>
-                    <div className="bg-orange-50 rounded-lg p-3">
-                      <div className="flex items-center justify-center mb-1">
                         <Award className="h-4 w-4 text-orange-600 mr-1" />
-                        <span className="font-semibold text-orange-900">4.8</span>
+                        <span className="font-semibold text-orange-900">{profile.rating}</span>
                       </div>
                       <p className="text-xs text-orange-600">Rating</p>
                     </div>
@@ -148,54 +218,55 @@ export default function SettingsPage() {
                   <CardDescription>Update your personal information and bio</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-orange-800">
-                        First Name
-                      </Label>
-                      <Input
-                        id="firstName"
-                        defaultValue="Sarah"
-                        className="border-orange-200 focus:border-orange-400"
-                      />
+                  <form onSubmit={handleSaveProfile} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName" className="text-orange-800">
+                          First Name
+                        </Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          value={profile.firstName}
+                          onChange={handleProfileChange}
+                          className="border-orange-200 focus:border-orange-400"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName" className="text-orange-800">
+                          Last Name
+                        </Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={profile.lastName}
+                          onChange={handleProfileChange}
+                          className="border-orange-200 focus:border-orange-400"
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-orange-800">
-                        Last Name
+                      <Label htmlFor="bio" className="text-orange-800">
+                        Bio
                       </Label>
-                      <Input
-                        id="lastName"
-                        defaultValue="Johnson"
-                        className="border-orange-200 focus:border-orange-400"
+                      <Textarea
+                        id="bio"
+                        name="bio"
+                        value={profile.bio}
+                        onChange={handleProfileChange}
+                        placeholder="Tell us about yourself and your cooking journey..."
+                        className="border-orange-200 focus:border-orange-400 min-h-[100px]"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-orange-800">
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      defaultValue="sarah.johnson@example.com"
-                      className="border-orange-200 focus:border-orange-400"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-orange-800">
-                      Bio
-                    </Label>
-                    <Textarea
-                      id="bio"
-                      placeholder="Tell us about yourself and your cooking journey..."
-                      defaultValue="Passionate home baker with over 10 years of experience. I love creating family-friendly recipes that bring people together around the dinner table."
-                      className="border-orange-200 focus:border-orange-400 min-h-[100px]"
-                    />
-                  </div>
-                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </Button>
+                    {profileError && <div className="text-red-600 text-sm">{profileError}</div>}
+                    {error && <div className="text-red-600 text-sm">{error}</div>}
+                    <Button className="bg-orange-600 hover:bg-orange-700 text-white" type="submit" disabled={saving}>
+                      <Save className="h-4 w-4 mr-2" />
+                      {saving ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
 
@@ -306,20 +377,6 @@ export default function SettingsPage() {
                     >
                       <Heart className="h-6 w-6" />
                       <span>Saved Recipes</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-orange-300 text-orange-700 hover:bg-orange-100 h-auto p-4 flex flex-col items-center space-y-2 bg-transparent"
-                    >
-                      <Users className="h-6 w-6" />
-                      <span>Following</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-orange-300 text-orange-700 hover:bg-orange-100 h-auto p-4 flex flex-col items-center space-y-2 bg-transparent"
-                    >
-                      <Mail className="h-6 w-6" />
-                      <span>Messages</span>
                     </Button>
                   </div>
                 </CardContent>

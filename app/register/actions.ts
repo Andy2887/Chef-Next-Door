@@ -3,25 +3,45 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
-export async function signup(formData: FormData) {
+export type SignUpForm = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+};
+
+export async function signup(form: SignUpForm) {
   const supabase = await createClient()
-  
-  // Get form data
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
 
   // Sign up the user
-  const { data: authData, error } = await supabase.auth.signUp(data)
-  
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: form.email,
+    password: form.password,
+  })
+
   if (error) {
-    console.error('Login error:', error)
+    console.error('Signup error:', error)
     return { error: error.message }
   }
 
   if (!authData.user) {
-    return { error: 'Login failed' }
+    return { error: 'Signup failed' }
+  }
+
+  // Create profile in the database
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert({
+      id: authData.user.id,
+      email: form.email,
+      first_name: form.firstName,
+      last_name: form.lastName,
+    })
+
+  if (profileError) {
+    console.error('Profile creation error:', profileError)
+    // Note: User is still created in auth, but profile creation failed
+    // You might want to handle this differently depending on your needs
   }
 
   revalidatePath('/', 'layout')

@@ -9,19 +9,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
-import { signup } from './actions'
+import { signup, SignUpForm } from './actions'
 import Navigation from "@/components/Navigation"
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignUpForm>({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    // confirmPassword is not part of SignUpForm, so handle separately
   })
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(false)
 
@@ -54,9 +55,9 @@ export default function SignUpPage() {
       newErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     }
 
-    if (!formData.confirmPassword) {
+    if (!confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password"
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (formData.password !== confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
     }
 
@@ -70,26 +71,27 @@ export default function SignUpPage() {
 
     setIsLoading(true)
     
-    try {
-      // Create FormData for the signup action
-      const formDataForAction = new FormData()
-      formDataForAction.append('email', formData.email)
-      formDataForAction.append('password', formData.password)
-      
-      // Call the signup action
-      await signup(formDataForAction)
-    } catch (error) {
-      console.error('Signup error:', error)
-      setIsLoading(false)
+    // Call the signup action with type-safe formData
+    const result = await signup(formData)
+    
+    // If there's an error, throw it to trigger error.tsx
+    if (result?.error) {
+      throw new Error(result.error)
     }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+    if (name === 'confirmPassword') {
+      setConfirmPassword(value)
+      if (errors.confirmPassword) {
+        setErrors((prev) => ({ ...prev, confirmPassword: "" }))
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }))
+      }
     }
   }
 
@@ -244,7 +246,7 @@ export default function SignUpPage() {
                           id="confirmPassword"
                           name="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
-                          value={formData.confirmPassword}
+                          value={confirmPassword}
                           onChange={handleInputChange}
                           placeholder="Confirm your password"
                           className={`pl-10 pr-10 border-orange-200 focus:border-orange-400 focus:ring-orange-400 ${

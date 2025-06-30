@@ -8,6 +8,7 @@ CREATE TABLE public.profiles (
   bio TEXT,
   rating DECIMAL(3,2) DEFAULT 0.00,
   total_reviews INTEGER DEFAULT 0,
+  num_recipes INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
