@@ -11,16 +11,25 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, X, Upload, Clock, Users, DiffIcon as Difficulty, Save, Eye, ImageIcon } from "lucide-react"
+import { Plus, X, Upload, Clock, Users, DiffIcon as Difficulty, Eye, ImageIcon, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import { useRouter } from "next/navigation"
 
 
 export default function CreateRecipeForm() {
+  const router = useRouter()
   const [ingredients, setIngredients] = useState([""])
   const [instructions, setInstructions] = useState([""])
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [isFeatured, setIsFeatured] = useState(false)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [difficulty, setDifficulty] = useState<string>("")
+  const [category, setCategory] = useState<string>("")
+  const [formError, setFormError] = useState<string | null>(null)
 
   const addIngredient = () => {
     setIngredients([...ingredients, ""])
@@ -61,9 +70,25 @@ export default function CreateRecipeForm() {
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (file: File) => {
+    const { createClient } = await import("@/utils/supabase/client")
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("User is not signed in")
+    const ext = file.name.split('.').pop()
+    const uuid = crypto.randomUUID()
+    const file_path = `users/${user.id}/recipies/${uuid}.${ext}`
+    const { error } = await supabase.storage.from('chef-next-door-images').upload(file_path, file)
+    if (error) throw error
+    const { data } = supabase.storage.from('chef-next-door-images').getPublicUrl(file_path)
+    if (!data.publicUrl) throw new Error("Failed to get public URL")
+    return data.publicUrl
+  }
+
+  const handleImageInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      setImageFile(file)
       const reader = new FileReader()
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string)
@@ -72,9 +97,103 @@ export default function CreateRecipeForm() {
     }
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError(null)
+    setIsPublishing(true)
+    try {
+      const form = e.target as HTMLFormElement
+      const title = (form.elements.namedItem("title") as HTMLInputElement).value.trim()
+      const description = (form.elements.namedItem("description") as HTMLInputElement).value.trim()
+      const prep_time = (form.elements.namedItem("prep-time") as HTMLInputElement).value.trim()
+      const cook_time = (form.elements.namedItem("cook-time") as HTMLInputElement).value.trim()
+      const servings = (form.elements.namedItem("servings") as HTMLInputElement).value.trim()
+      // Validate all required fields
+      if (!title || !description || !prep_time || !cook_time || !servings || !difficulty || !category) {
+        setFormError("Please fill in all required fields.")
+        setIsPublishing(false)
+        return
+      }
+      if (ingredients.length === 0 || ingredients.some(i => !i.trim())) {
+        setFormError("Please include at least one ingredient and make sure none are empty.")
+        setIsPublishing(false)
+        return
+      }
+      if (instructions.length === 0 || instructions.some(i => !i.trim())) {
+        setFormError("Please include at least one instruction and make sure none are empty.")
+        setIsPublishing(false)
+        return
+      }
+      if (tags.length === 0) {
+        setFormError("Please add at least one tag.")
+        setIsPublishing(false)
+        return
+      }
+      let imageUrl = null
+      if (imageFile) {
+        imageUrl = await handleImageUpload(imageFile)
+      } else {
+        setFormError("Please upload a recipe image.")
+        setIsPublishing(false)
+        return
+      }
+      const { createClient } = await import("@/utils/supabase/client")
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("User is not signed in")
+      const { error } = await supabase.from("recipes").insert([
+        {
+          chef_id: user.id,
+          title,
+          description,
+          ingredients,
+          instructions,
+          featured: isFeatured,
+          prep_time: Number(prep_time),
+          cook_time: Number(cook_time),
+          servings: Number(servings),
+          difficulty_level: difficulty,
+          cuisine_type: category,
+          tags,
+          image_url: imageUrl,
+        },
+      ])
+      if (error) throw error
+      setShowSuccessNotification(true)
+      setTimeout(() => {
+        setShowSuccessNotification(false)
+        router.push("/recipes")
+      }, 3000)
+    } catch (error) {
+      console.error("Failed to publish recipe:", error)
+      setFormError("Failed to publish recipe. Please try again.")
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
       <Navigation />
+
+      {/* Success Notification */}
+      {showSuccessNotification && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-green-600 text-white py-4 px-4 shadow-lg animate-in slide-in-from-top duration-300">
+          <div className="container mx-auto flex items-center justify-center space-x-2">
+            <div className="bg-white rounded-full p-1">
+              <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <span className="font-semibold text-lg">Recipe Published!</span>
+            <span className="text-green-100">Redirecting to recipes page...</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <section className="py-12 bg-gradient-to-r from-orange-100 to-amber-100 relative overflow-hidden">
@@ -92,7 +211,7 @@ export default function CreateRecipeForm() {
       {/* Main Form */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <form className="space-y-8">
+          <form className="space-y-8" onSubmit={handleSubmit}>
             {/* Basic Information */}
             <Card className="border-orange-200">
               <CardHeader>
@@ -107,6 +226,7 @@ export default function CreateRecipeForm() {
                     </Label>
                     <Input
                       id="title"
+                      name="title"
                       placeholder="e.g., Grandma's Chocolate Chip Cookies"
                       className="border-orange-200 focus:border-orange-400"
                       required
@@ -116,7 +236,7 @@ export default function CreateRecipeForm() {
                     <Label htmlFor="category" className="text-orange-800">
                       Category *
                     </Label>
-                    <Select>
+                    <Select value={category} onValueChange={setCategory}>
                       <SelectTrigger className="border-orange-200 focus:border-orange-400">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -140,6 +260,7 @@ export default function CreateRecipeForm() {
                   </Label>
                   <Textarea
                     id="description"
+                    name="description"
                     placeholder="Describe your recipe, what makes it special, and any background story..."
                     className="border-orange-200 focus:border-orange-400 min-h-[100px]"
                     required
@@ -154,6 +275,7 @@ export default function CreateRecipeForm() {
                     </Label>
                     <Input
                       id="prep-time"
+                      name="prep-time"
                       type="number"
                       placeholder="15"
                       className="border-orange-200 focus:border-orange-400"
@@ -166,6 +288,7 @@ export default function CreateRecipeForm() {
                     </Label>
                     <Input
                       id="cook-time"
+                      name="cook-time"
                       type="number"
                       placeholder="25"
                       className="border-orange-200 focus:border-orange-400"
@@ -178,6 +301,7 @@ export default function CreateRecipeForm() {
                     </Label>
                     <Input
                       id="servings"
+                      name="servings"
                       type="number"
                       placeholder="4"
                       className="border-orange-200 focus:border-orange-400"
@@ -188,7 +312,7 @@ export default function CreateRecipeForm() {
                       <Difficulty className="h-4 w-4 mr-1" />
                       Difficulty
                     </Label>
-                    <Select>
+                    <Select value={difficulty} onValueChange={setDifficulty}>
                       <SelectTrigger className="border-orange-200 focus:border-orange-400">
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -199,6 +323,24 @@ export default function CreateRecipeForm() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="featured"
+                      type="checkbox"
+                      className="w-4 h-4 text-orange-600 bg-gray-100 border-orange-300 rounded focus:ring-orange-500 focus:ring-2"
+                      checked={isFeatured}
+                      onChange={(e) => setIsFeatured(e.target.checked)}
+                    />
+                    <Label htmlFor="featured" className="text-orange-800 flex items-center">
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      Mark as Featured Recipe
+                    </Label>
+                  </div>
+                  <p className="text-sm text-orange-600 ml-6">
+                    Featured recipes appear in the highlighted section of the recipe dashboard
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -239,7 +381,7 @@ export default function CreateRecipeForm() {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleImageInput}
                         className="hidden"
                         id="image-upload"
                       />
@@ -375,16 +517,13 @@ export default function CreateRecipeForm() {
               </CardContent>
             </Card>
 
+            {/* Form Error Message */}
+            {formError && (
+              <div className="mb-4 text-red-600 font-semibold text-center">{formError}</div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex justify-between items-center pt-8">
-              <Button
-                type="button"
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save as Draft
-              </Button>
               <div className="flex space-x-3">
                 <Button
                   type="button"
@@ -394,8 +533,19 @@ export default function CreateRecipeForm() {
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
-                <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-8">
-                  Publish Recipe
+                <Button
+                  type="submit"
+                  disabled={isPublishing}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPublishing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Publishing...
+                    </>
+                  ) : (
+                    "Publish Recipe"
+                  )}
                 </Button>
               </div>
             </div>

@@ -21,6 +21,7 @@ CREATE TABLE public.recipes (
   description TEXT,
   ingredients JSONB NOT NULL,
   instructions JSONB NOT NULL,
+  featured BOOLEAN DEFAULT false NOT NULL,
   prep_time INTEGER, -- in minutes
   cook_time INTEGER, -- in minutes
   servings INTEGER,
