@@ -4,32 +4,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChefHat, Mail, CheckCircle, ArrowRight } from "lucide-react"
+import { Mail, CheckCircle, ArrowRight } from "lucide-react"
+import Navigation from "@/components/Navigation"
 
 export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
-      {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-orange-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-600" />
-              <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
-            </Link>
-            <div className="flex items-center space-x-3">
-              <Link href="/login">
-                <Button
-                  variant="outline"
-                  className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
-                >
-                  Sign In
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">

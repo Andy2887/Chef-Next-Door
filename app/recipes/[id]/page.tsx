@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { ChefHat, Clock, Users, Star, Heart, MessageCircle, Share2, Bookmark } from "lucide-react"
+import { Clock, Users, Star, Heart, MessageCircle, Share2, Bookmark } from "lucide-react"
+import Navigation from "@/components/Navigation"
 
 export default function RecipeDetailPage() {
   const [isLiked, setIsLiked] = useState(false)
@@ -84,26 +85,7 @@ export default function RecipeDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
-      {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-600" />
-              <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
-            </Link>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
-              >
-                Sign In
-              </Button>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white">Join Now</Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

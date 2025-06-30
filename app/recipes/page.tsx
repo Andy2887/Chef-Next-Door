@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChefHat, Clock, Users, Star, Search, Filter, Heart, TrendingUp, Sparkles } from "lucide-react"
+import Navigation from "@/components/Navigation"
 
 export default function RecipesDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -313,34 +314,7 @@ export default function RecipesDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
-      {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-600" />
-              <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/recipes" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
-                Browse Recipes
-              </Link>
-              <Link href="/create" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
-                Share Recipe
-              </Link>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-white/80 backdrop-blur-sm transition-all"
-              >
-                Sign In
-              </Button>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white transition-all">Join Now</Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Header Section */}
       <section className="py-16 bg-gradient-to-r from-orange-100 to-amber-100 relative overflow-hidden">

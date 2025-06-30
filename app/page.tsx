@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, Users, Star, ChefHat } from "lucide-react"
+import Navigation from "@/components/Navigation"
 
 export default function HomePage() {
   const [scrollY, setScrollY] = useState(0)
@@ -53,34 +54,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
-      {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-600" />
-              <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
-            </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/recipes" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
-                Browse Recipes
-              </Link>
-              <Link href="/create" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
-                Share Recipe
-              </Link>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-white/80 backdrop-blur-sm transition-all"
-              >
-                Sign In
-              </Button>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white transition-all">Join Now</Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Hero Section with Background Image */}
       <section className="relative h-screen overflow-hidden">
@@ -190,53 +164,52 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredRecipes.map((recipe) => (
-              <Card
-                key={recipe.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-105 group"
-              >
-                <div className="relative overflow-hidden">
-                  <Image
-                    src={recipe.image || "/placeholder.svg"}
-                    alt={recipe.title}
-                    width={300}
-                    height={200}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-semibold text-orange-900">{recipe.rating}</span>
-                  </div>
-                </div>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
-                    {recipe.title}
-                  </CardTitle>
-                  <CardDescription className="text-orange-600">by {recipe.author}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{recipe.cookTime}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4" />
-                      <span>{recipe.servings} servings</span>
+              <Link key={recipe.id} href={`/recipes/${recipe.id}`} className="group">
+                <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-105 group">
+                  <div className="relative overflow-hidden">
+                    <Image
+                      src={recipe.image || "/placeholder.svg"}
+                      alt={recipe.title}
+                      width={300}
+                      height={200}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="text-sm font-semibold text-orange-900">{recipe.rating}</span>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {recipe.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="bg-orange-100 text-orange-700 text-xs hover:bg-orange-200 transition-colors"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
+                      {recipe.title}
+                    </CardTitle>
+                    <CardDescription className="text-orange-600">by {recipe.author}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{recipe.cookTime}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Users className="h-4 w-4" />
+                        <span>{recipe.servings} servings</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {recipe.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="bg-orange-100 text-orange-700 text-xs hover:bg-orange-200 transition-colors"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
           <div className="text-center mt-16">
