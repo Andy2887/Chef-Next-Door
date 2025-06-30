@@ -1,87 +1,74 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { Clock, Users, Star, Heart, MessageCircle, Share2, Bookmark } from "lucide-react"
+// import { Textarea } from "@/components/ui/textarea"
+// import { Separator } from "@/components/ui/separator"
+import { Clock, Users, Star, Heart, Share2, Bookmark } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import { createClient } from "@/utils/supabase/client"
+
+type Recipe = {
+  id: string
+  chef_id: string
+  title: string
+  description: string | null
+  ingredients: string[]
+  instructions: string[]
+  featured: boolean
+  prep_time: number | null
+  cook_time: number | null
+  servings: number | null
+  difficulty_level: string | null
+  cuisine_type: string | null
+  tags: string[]
+  image_url: string | null
+  rating: number
+  total_reviews: number
+  created_at: string
+  updated_at: string
+  profiles?: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    avatar_url: string | null
+    bio?: string | null
+  }
+}
 
 export default function RecipeDetailPage() {
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
-  const [newComment, setNewComment] = useState("")
+  const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Mock recipe data
-  const recipe = {
-    id: 1,
-    title: "Grandma's Chocolate Chip Cookies",
-    description:
-      "These are the most amazing chocolate chip cookies you'll ever taste! Passed down through generations, this recipe creates perfectly chewy cookies with crispy edges and gooey centers.",
-    author: {
-      name: "Sarah Johnson",
-      avatar: "/placeholder.svg?height=40&width=40",
-      bio: "Home baker and recipe enthusiast",
-    },
-    image: "/placeholder.svg?height=400&width=600",
-    cookTime: 25,
-    prepTime: 15,
-    servings: 24,
-    rating: 4.8,
-    reviewCount: 127,
-    likes: 89,
-    tags: ["Dessert", "Easy", "Family Favorite", "Baking"],
-    ingredients: [
-      "2¼ cups all-purpose flour",
-      "1 tsp baking soda",
-      "1 tsp salt",
-      "1 cup butter, softened",
-      "¾ cup granulated sugar",
-      "¾ cup packed brown sugar",
-      "2 large eggs",
-      "2 tsp vanilla extract",
-      "2 cups chocolate chips",
-    ],
-    instructions: [
-      "Preheat your oven to 375°F (190°C). Line baking sheets with parchment paper.",
-      "In a medium bowl, whisk together flour, baking soda, and salt. Set aside.",
-      "In a large bowl, cream together the softened butter and both sugars until light and fluffy, about 3-4 minutes.",
-      "Beat in eggs one at a time, then add vanilla extract.",
-      "Gradually mix in the flour mixture until just combined. Don't overmix.",
-      "Fold in the chocolate chips until evenly distributed.",
-      "Drop rounded tablespoons of dough onto prepared baking sheets, spacing them 2 inches apart.",
-      "Bake for 9-11 minutes, or until edges are golden brown but centers still look slightly underbaked.",
-      "Let cool on baking sheet for 5 minutes before transferring to a wire rack.",
-    ],
-    createdAt: "2 days ago",
-  }
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      setLoading(true)
+      const supabase = createClient()
+      // Get recipe id from URL
+      const id = window.location.pathname.split("/").pop()
+      if (!id) return
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(`*, profiles:chef_id(id, first_name, last_name, avatar_url, bio)`)
+        .eq('id', id)
+        .single()
+      if (!error && data) {
+        setRecipe(data as Recipe)
+      }
+      setLoading(false)
+    }
+    fetchRecipe()
+  }, [])
 
-  // Mock comments data
-  const comments = [
-    {
-      id: 1,
-      author: "Mike Chen",
-      avatar: "/placeholder.svg?height=32&width=32",
-      content:
-        "These cookies turned out amazing! My kids absolutely loved them. I added a pinch of sea salt on top before baking - highly recommend!",
-      createdAt: "1 day ago",
-      likes: 5,
-    },
-    {
-      id: 2,
-      author: "Emma Wilson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      content:
-        "Perfect recipe! I've made these three times already. The texture is exactly what I was looking for - chewy with crispy edges.",
-      createdAt: "3 days ago",
-      likes: 8,
-    },
-  ]
+  if (loading) return <div>Loading...</div>
+  if (!recipe) return <div>Recipe not found.</div>
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
@@ -107,17 +94,14 @@ export default function RecipeDetailPage() {
                 {/* Author Info */}
                 <div className="flex items-center space-x-4 mb-6">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={recipe.author.avatar || "/placeholder.svg"} alt={recipe.author.name} />
+                    <AvatarImage src={recipe.profiles?.avatar_url ?? undefined} alt={recipe.profiles?.first_name ?? undefined} />
                     <AvatarFallback className="bg-orange-100 text-orange-700">
-                      {recipe.author.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {`${recipe.profiles?.first_name ?? ""}${recipe.profiles?.last_name ? " " + recipe.profiles.last_name[0] : ""}`.trim()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-orange-900">{recipe.author.name}</p>
-                    <p className="text-sm text-orange-600">{recipe.author.bio}</p>
+                    <p className="font-semibold text-orange-900">{recipe.profiles?.first_name} {recipe.profiles?.last_name}</p>
+                    <p className="text-sm text-orange-600">{recipe.profiles?.bio}</p>
                   </div>
                 </div>
 
@@ -125,7 +109,7 @@ export default function RecipeDetailPage() {
                 <div className="flex items-center space-x-6 mb-6 text-orange-700">
                   <div className="flex items-center space-x-1">
                     <Clock className="h-5 w-5" />
-                    <span>{recipe.cookTime} min</span>
+                    <span>{recipe.cook_time} min</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Users className="h-5 w-5" />
@@ -134,7 +118,7 @@ export default function RecipeDetailPage() {
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 text-yellow-500 fill-current" />
                     <span>
-                      {recipe.rating} ({recipe.reviewCount} reviews)
+                      {recipe.rating} ({recipe.total_reviews} reviews)
                     </span>
                   </div>
                 </div>
@@ -156,7 +140,7 @@ export default function RecipeDetailPage() {
                     className={`border-orange-300 ${isLiked ? "bg-orange-100 text-orange-800" : "text-orange-700 hover:bg-orange-100"}`}
                   >
                     <Heart className={`h-4 w-4 mr-2 ${isLiked ? "fill-current" : ""}`} />
-                    {recipe.likes + (isLiked ? 1 : 0)}
+                    {recipe.total_reviews + (isLiked ? 1 : 0)}
                   </Button>
                   <Button
                     variant="outline"
@@ -179,7 +163,7 @@ export default function RecipeDetailPage() {
               {/* Recipe Image */}
               <div className="relative">
                 <Image
-                  src={recipe.image || "/placeholder.svg"}
+                  src={recipe.image_url || "/placeholder.svg"}
                   alt={recipe.title}
                   width={600}
                   height={400}
@@ -230,7 +214,7 @@ export default function RecipeDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Comments Section */}
+              {/* Comments Section
               <Card className="border-orange-200">
                 <CardHeader>
                   <CardTitle className="text-orange-900 flex items-center space-x-2">
@@ -239,7 +223,7 @@ export default function RecipeDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Add Comment */}
+                  Add Comment
                   <div className="space-y-3">
                     <Textarea
                       placeholder="Share your thoughts about this recipe..."
@@ -252,7 +236,7 @@ export default function RecipeDetailPage() {
 
                   <Separator className="bg-orange-200" />
 
-                  {/* Comments List */}
+                  Comments List
                   <div className="space-y-6">
                     {comments.map((comment) => (
                       <div key={comment.id} className="space-y-3">
@@ -295,7 +279,7 @@ export default function RecipeDetailPage() {
                     ))}
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
 
             {/* Sidebar */}
@@ -308,15 +292,15 @@ export default function RecipeDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-orange-700">Prep Time</span>
-                    <span className="font-semibold text-orange-900">{recipe.prepTime} min</span>
+                    <span className="font-semibold text-orange-900">{recipe.prep_time} min</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-orange-700">Cook Time</span>
-                    <span className="font-semibold text-orange-900">{recipe.cookTime} min</span>
+                    <span className="font-semibold text-orange-900">{recipe.cook_time} min</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-orange-700">Total Time</span>
-                    <span className="font-semibold text-orange-900">{recipe.prepTime + recipe.cookTime} min</span>
+                    <span className="font-semibold text-orange-900">{recipe.prep_time! + recipe.cook_time!} min</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-orange-700">Servings</span>
@@ -324,13 +308,13 @@ export default function RecipeDetailPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-orange-700">Difficulty</span>
-                    <span className="font-semibold text-orange-900">Easy</span>
+                    <span className="font-semibold text-orange-900">{recipe.difficulty_level}</span>
                   </div>
                 </CardContent>
               </Card>
 
               {/* More from Author */}
-              <Card className="border-orange-200">
+              {/* <Card className="border-orange-200">
                 <CardHeader>
                   <CardTitle className="text-orange-900">More from {recipe.author.name}</CardTitle>
                 </CardHeader>
@@ -370,7 +354,7 @@ export default function RecipeDetailPage() {
                     View All Recipes
                   </Button>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </div>
         </div>

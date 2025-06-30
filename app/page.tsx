@@ -8,9 +8,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Clock, Users, Star, ChefHat } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import { createClient } from "@/utils/supabase/client"
 
 export default function HomePage() {
   const [scrollY, setScrollY] = useState(0)
+  type Recipe = {
+    id: string
+    title: string
+    author?: string
+    chef_id?: string
+    image_url?: string | null
+    cook_time?: number | null
+    servings?: number | null
+    rating?: number | null
+    tags: string[]
+    created_at?: string
+    // add other fields as needed
+  }
+  const [featuredRecipes, setFeaturedRecipes] = useState<Recipe[]>([])
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -18,39 +33,19 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Mock data for featured recipes
-  const featuredRecipes = [
-    {
-      id: 1,
-      title: "Grandma's Chocolate Chip Cookies",
-      author: "Sarah Johnson",
-      image: "/placeholder.svg?height=200&width=300",
-      cookTime: "25 min",
-      servings: 24,
-      rating: 4.8,
-      tags: ["Dessert", "Easy", "Family Favorite"],
-    },
-    {
-      id: 2,
-      title: "Homemade Pasta Carbonara",
-      author: "Marco Rossi",
-      image: "/placeholder.svg?height=200&width=300",
-      cookTime: "20 min",
-      servings: 4,
-      rating: 4.9,
-      tags: ["Italian", "Quick", "Comfort Food"],
-    },
-    {
-      id: 3,
-      title: "Fresh Garden Salad",
-      author: "Emma Green",
-      image: "/placeholder.svg?height=200&width=300",
-      cookTime: "10 min",
-      servings: 2,
-      rating: 4.6,
-      tags: ["Healthy", "Vegetarian", "Quick"],
-    },
-  ]
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('featured', true)
+        .order('created_at', { ascending: false })
+        .limit(6)
+      if (!error && data) setFeaturedRecipes(data)
+    }
+    fetchFeatured()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
@@ -168,7 +163,7 @@ export default function HomePage() {
                 <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-105 group">
                   <div className="relative overflow-hidden">
                     <Image
-                      src={recipe.image || "/placeholder.svg"}
+                      src={recipe.image_url || "/placeholder.svg"}
                       alt={recipe.title}
                       width={300}
                       height={200}
@@ -176,28 +171,28 @@ export default function HomePage() {
                     />
                     <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-semibold text-orange-900">{recipe.rating}</span>
+                      <span className="text-sm font-semibold text-orange-900">{recipe.rating ?? "-"}</span>
                     </div>
                   </div>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
                       {recipe.title}
                     </CardTitle>
-                    <CardDescription className="text-orange-600">by {recipe.author}</CardDescription>
+                    <CardDescription className="text-orange-600">by {recipe.author ?? "Unknown"}</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{recipe.cookTime}</span>
+                        <span>{recipe.cook_time ? `${recipe.cook_time} min` : "-"}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Users className="h-4 w-4" />
-                        <span>{recipe.servings} servings</span>
+                        <span>{recipe.servings ? `${recipe.servings} servings` : "-"}</span>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {recipe.tags.map((tag) => (
+                      {(recipe.tags || []).slice(0, 3).map((tag: string) => (
                         <Badge
                           key={tag}
                           variant="secondary"
@@ -211,17 +206,6 @@ export default function HomePage() {
                 </Card>
               </Link>
             ))}
-          </div>
-          <div className="text-center mt-16">
-            <Link href="/recipes">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent px-8 py-3 text-lg transition-all hover:scale-105"
-              >
-                View All Recipes
-              </Button>
-            </Link>
           </div>
         </div>
       </section>

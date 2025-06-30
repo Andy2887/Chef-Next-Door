@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,218 +10,56 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChefHat, Clock, Users, Star, Search, Filter, Heart, TrendingUp, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import { createClient } from "@/utils/supabase/client"
+
+type Recipe = {
+  id: string
+  chef_id: string
+  title: string
+  description: string | null
+  ingredients: string[]
+  instructions: string[]
+  featured: boolean
+  prep_time: number | null
+  cook_time: number | null
+  servings: number | null
+  difficulty_level: string | null
+  cuisine_type: string | null
+  tags: string[]
+  image_url: string | null
+  rating: number
+  total_reviews: number
+  created_at: string
+  updated_at: string
+  profiles?: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    avatar_url: string | null
+  }
+}
 
 export default function RecipesDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("featured")
+  const [recipes, setRecipes] = useState<Recipe[]>([])
 
-  // Mock data for featured recipes
-  const featuredRecipes = [
-    {
-      id: "chocolate-chip-cookies",
-      title: "Grandma's Chocolate Chip Cookies",
-      description: "The perfect chewy cookies with crispy edges that everyone will love",
-      author: {
-        name: "Sarah Johnson",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 25,
-      prepTime: 15,
-      servings: 24,
-      rating: 4.8,
-      reviewCount: 127,
-      likes: 89,
-      difficulty: "Easy",
-      tags: ["Dessert", "Baking", "Family Favorite"],
-      featured: true,
-      createdAt: "2 days ago",
-    },
-    {
-      id: "pasta-carbonara",
-      title: "Authentic Italian Carbonara",
-      description: "Creamy, rich pasta dish made with eggs, cheese, and pancetta",
-      author: {
-        name: "Marco Rossi",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 20,
-      prepTime: 10,
-      servings: 4,
-      rating: 4.9,
-      reviewCount: 203,
-      likes: 156,
-      difficulty: "Medium",
-      tags: ["Italian", "Pasta", "Quick"],
-      featured: true,
-      createdAt: "1 week ago",
-    },
-    {
-      id: "avocado-toast",
-      title: "Gourmet Avocado Toast",
-      description: "Elevated avocado toast with poached egg and everything seasoning",
-      author: {
-        name: "Emma Green",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 10,
-      prepTime: 5,
-      servings: 2,
-      rating: 4.6,
-      reviewCount: 89,
-      likes: 67,
-      difficulty: "Easy",
-      tags: ["Healthy", "Breakfast", "Vegetarian"],
-      featured: true,
-      createdAt: "3 days ago",
-    },
-    {
-      id: "beef-stir-fry",
-      title: "Asian Beef Stir Fry",
-      description: "Quick and flavorful stir fry with tender beef and crisp vegetables",
-      author: {
-        name: "David Chen",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 15,
-      prepTime: 20,
-      servings: 4,
-      rating: 4.7,
-      reviewCount: 145,
-      likes: 98,
-      difficulty: "Medium",
-      tags: ["Asian", "Stir Fry", "Quick"],
-      featured: true,
-      createdAt: "5 days ago",
-    },
-  ]
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(`*, profiles:chef_id(id, first_name, last_name, avatar_url)`)
+        .order('created_at', { ascending: false })
+      if (!error && data) {
+        setRecipes(data as Recipe[])
+      }
+    }
+    fetchRecipes()
+  }, [])
 
-  // Mock data for latest recipes
-  const latestRecipes = [
-    {
-      id: "lemon-bars",
-      title: "Tangy Lemon Bars",
-      description: "Bright and citrusy bars with a buttery shortbread crust",
-      author: {
-        name: "Lisa Martinez",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 45,
-      prepTime: 20,
-      servings: 16,
-      rating: 4.5,
-      reviewCount: 34,
-      likes: 28,
-      difficulty: "Easy",
-      tags: ["Dessert", "Citrus", "Baking"],
-      featured: false,
-      createdAt: "2 hours ago",
-    },
-    {
-      id: "mushroom-risotto",
-      title: "Creamy Mushroom Risotto",
-      description: "Rich and creamy risotto with mixed wild mushrooms",
-      author: {
-        name: "Antonio Silva",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 35,
-      prepTime: 15,
-      servings: 4,
-      rating: 4.8,
-      reviewCount: 67,
-      likes: 52,
-      difficulty: "Hard",
-      tags: ["Italian", "Vegetarian", "Comfort Food"],
-      featured: false,
-      createdAt: "5 hours ago",
-    },
-    {
-      id: "chicken-tacos",
-      title: "Spicy Chicken Tacos",
-      description: "Flavorful chicken tacos with homemade salsa and guacamole",
-      author: {
-        name: "Maria Rodriguez",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 25,
-      prepTime: 30,
-      servings: 6,
-      rating: 4.7,
-      reviewCount: 91,
-      likes: 73,
-      difficulty: "Medium",
-      tags: ["Mexican", "Spicy", "Dinner"],
-      featured: false,
-      createdAt: "8 hours ago",
-    },
-    {
-      id: "blueberry-muffins",
-      title: "Fluffy Blueberry Muffins",
-      description: "Light and fluffy muffins bursting with fresh blueberries",
-      author: {
-        name: "Jennifer White",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 20,
-      prepTime: 15,
-      servings: 12,
-      rating: 4.6,
-      reviewCount: 78,
-      likes: 61,
-      difficulty: "Easy",
-      tags: ["Breakfast", "Baking", "Berries"],
-      featured: false,
-      createdAt: "12 hours ago",
-    },
-    {
-      id: "salmon-teriyaki",
-      title: "Glazed Salmon Teriyaki",
-      description: "Perfectly glazed salmon with homemade teriyaki sauce",
-      author: {
-        name: "Kenji Tanaka",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 20,
-      prepTime: 10,
-      servings: 4,
-      rating: 4.9,
-      reviewCount: 112,
-      likes: 94,
-      difficulty: "Medium",
-      tags: ["Japanese", "Seafood", "Healthy"],
-      featured: false,
-      createdAt: "1 day ago",
-    },
-    {
-      id: "vegetable-curry",
-      title: "Coconut Vegetable Curry",
-      description: "Aromatic curry with mixed vegetables in coconut milk",
-      author: {
-        name: "Priya Patel",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      image: "/placeholder.svg?height=300&width=400",
-      cookTime: 30,
-      prepTime: 20,
-      servings: 6,
-      rating: 4.4,
-      reviewCount: 56,
-      likes: 42,
-      difficulty: "Medium",
-      tags: ["Indian", "Vegan", "Curry"],
-      featured: false,
-      createdAt: "1 day ago",
-    },
-  ]
+  const featuredRecipes = recipes.filter((r) => r.featured)
+  const latestRecipes = recipes.filter((r) => !r.featured)
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -236,12 +74,12 @@ export default function RecipesDashboard() {
     }
   }
 
-  const RecipeCard = ({ recipe }: { recipe: any }) => (
+  const RecipeCard = ({ recipe }: { recipe: Recipe }) => (
     <Link href={`/recipes/${recipe.id}`} className="group">
       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-[1.02] group h-full">
         <div className="relative overflow-hidden">
           <Image
-            src={recipe.image || "/placeholder.svg"}
+            src={recipe.image_url || "/placeholder.svg"}
             alt={recipe.title}
             width={400}
             height={300}
@@ -252,7 +90,9 @@ export default function RecipesDashboard() {
             <span className="text-sm font-semibold text-orange-900">{recipe.rating}</span>
           </div>
           <div className="absolute top-3 left-3">
-            <Badge className={getDifficultyColor(recipe.difficulty)}>{recipe.difficulty}</Badge>
+            <Badge className={getDifficultyColor(recipe.difficulty_level || "")}>
+              {recipe.difficulty_level}
+            </Badge>
           </div>
           {recipe.featured && (
             <div className="absolute bottom-3 left-3">
@@ -267,25 +107,26 @@ export default function RecipesDashboard() {
           <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
             {recipe.title}
           </CardTitle>
-          <CardDescription className="text-orange-600 line-clamp-2">{recipe.description}</CardDescription>
+          <CardDescription className="text-orange-600 line-clamp-2">
+            {recipe.description}
+          </CardDescription>
           <div className="flex items-center space-x-2 mt-2">
             <Avatar className="h-6 w-6">
-              <AvatarImage src={recipe.author.avatar || "/placeholder.svg"} alt={recipe.author.name} />
+              <AvatarImage src={recipe.profiles?.avatar_url ?? undefined} alt={recipe.profiles?.first_name ?? undefined} />
               <AvatarFallback className="bg-orange-100 text-orange-700 text-xs">
-                {recipe.author.name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")}
+                {`${recipe.profiles?.first_name ?? ""}${recipe.profiles?.last_name ? " " + recipe.profiles.last_name[0] : ""}`.trim()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-orange-600">by {recipe.author.name}</span>
+            <span className="text-sm text-orange-600">
+              by {recipe.profiles?.first_name} {recipe.profiles?.last_name}
+            </span>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
             <div className="flex items-center space-x-1">
               <Clock className="h-4 w-4" />
-              <span>{recipe.cookTime} min</span>
+              <span>{recipe.cook_time} min</span>
             </div>
             <div className="flex items-center space-x-1">
               <Users className="h-4 w-4" />
@@ -293,7 +134,7 @@ export default function RecipesDashboard() {
             </div>
             <div className="flex items-center space-x-1">
               <Heart className="h-4 w-4" />
-              <span>{recipe.likes}</span>
+              <span>{recipe.total_reviews}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-1">
@@ -414,17 +255,6 @@ export default function RecipesDashboard() {
             </div>
           </section>
         )}
-
-        {/* Load More Button */}
-        <div className="text-center mt-12">
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent px-8 py-3 text-lg transition-all hover:scale-105"
-          >
-            Load More Recipes
-          </Button>
-        </div>
       </div>
 
       {/* Newsletter Section */}
