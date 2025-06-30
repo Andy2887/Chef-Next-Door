@@ -42,18 +42,15 @@ export default function SettingsPage() {
     num_recipes: 0,
     rating: 0,
   })
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [profileError, setProfileError] = useState("")
 
   useEffect(() => {
     const fetchProfile = async () => {
-      setLoading(true)
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setLoading(false)
         setError("Not logged in")
         return
       }
@@ -76,7 +73,6 @@ export default function SettingsPage() {
         })
         setProfileImage(data.avatar_url || "/placeholder.svg?height=120&width=120")
       }
-      setLoading(false)
     }
     fetchProfile()
   }, [])
@@ -153,7 +149,7 @@ export default function SettingsPage() {
                 <CardHeader className="text-center">
                   <div className="relative mx-auto mb-4">
                     <Avatar className="h-24 w-24 mx-auto">
-                      <AvatarImage src={profileImage || "/placeholder.svg"} alt="Profile" />
+                      <AvatarImage src={profileImage} alt="Profile" />
                       <AvatarFallback className="bg-orange-100 text-orange-700 text-2xl">
                         {profile.firstName?.[0]?.toUpperCase() || ''}{profile.lastName?.[0]?.toUpperCase() || ''}
                       </AvatarFallback>
