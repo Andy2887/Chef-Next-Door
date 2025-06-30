@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, X, Upload, Clock, Users, DiffIcon as Difficulty, Eye, ImageIcon, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
 import { useRouter } from "next/navigation"
+import { SuccessNotification } from "@/components/ui/success-notification"
 
 
 export default function CreateRecipeForm() {
@@ -177,23 +178,13 @@ export default function CreateRecipeForm() {
       <Navigation />
 
       {/* Success Notification */}
-      {showSuccessNotification && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-green-600 text-white py-4 px-4 shadow-lg animate-in slide-in-from-top duration-300">
-          <div className="container mx-auto flex items-center justify-center space-x-2">
-            <div className="bg-white rounded-full p-1">
-              <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <span className="font-semibold text-lg">Recipe Published!</span>
-            <span className="text-green-100">Redirecting to recipes page...</span>
-          </div>
-        </div>
-      )}
+      <SuccessNotification
+        message="Recipe Published! Redirecting to recipes page..."
+        isVisible={showSuccessNotification}
+        onClose={() => setShowSuccessNotification(false)}
+        autoClose={true}
+        duration={3000}
+      />
 
       {/* Header */}
       <section className="py-12 bg-gradient-to-r from-orange-100 to-amber-100 relative overflow-hidden">
@@ -271,7 +262,7 @@ export default function CreateRecipeForm() {
                   <div className="space-y-2">
                     <Label htmlFor="prep-time" className="text-orange-800 flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      Prep Time (min)
+                      Prep Time (min) *
                     </Label>
                     <Input
                       id="prep-time"
@@ -284,7 +275,7 @@ export default function CreateRecipeForm() {
                   <div className="space-y-2">
                     <Label htmlFor="cook-time" className="text-orange-800 flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      Cook Time (min)
+                      Cook Time (min) *
                     </Label>
                     <Input
                       id="cook-time"
@@ -297,7 +288,7 @@ export default function CreateRecipeForm() {
                   <div className="space-y-2">
                     <Label htmlFor="servings" className="text-orange-800 flex items-center">
                       <Users className="h-4 w-4 mr-1" />
-                      Servings
+                      Servings *
                     </Label>
                     <Input
                       id="servings"
@@ -310,7 +301,7 @@ export default function CreateRecipeForm() {
                   <div className="space-y-2">
                     <Label htmlFor="difficulty" className="text-orange-800 flex items-center">
                       <Difficulty className="h-4 w-4 mr-1" />
-                      Difficulty
+                      Difficulty *
                     </Label>
                     <Select value={difficulty} onValueChange={setDifficulty}>
                       <SelectTrigger className="border-orange-200 focus:border-orange-400">
@@ -348,7 +339,7 @@ export default function CreateRecipeForm() {
             {/* Recipe Image */}
             <Card className="border-orange-200">
               <CardHeader>
-                <CardTitle className="text-orange-900">Recipe Image</CardTitle>
+                <CardTitle className="text-orange-900">Recipe Image *</CardTitle>
                 <CardDescription>Upload a beautiful photo of your finished dish</CardDescription>
               </CardHeader>
               <CardContent>
