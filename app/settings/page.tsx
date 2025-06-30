@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,7 +31,9 @@ export default function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [profileImage, setProfileImage] = useState("/placeholder.svg?height=120&width=120")
+  const [profileImageUrl, setProfileImageUrl] = useState("")
+  const [file, setFile] = useState<File | null>(null);
+
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
@@ -71,20 +72,60 @@ export default function SettingsPage() {
           num_recipes: data.num_recipes ?? 0,
           rating: data.rating ?? 0,
         })
-        setProfileImage(data.avatar_url || "/placeholder.svg?height=120&width=120")
+        setProfileImageUrl(data.avatar_url || "")
       }
     }
     fetchProfile()
   }, [])
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = (e) => {
-        setProfileImage(e.target?.result as string)
+        setProfileImageUrl(e.target?.result as string)
       }
       reader.readAsDataURL(file)
+      setFile(file);
+    }
+  }
+
+  // Helper for uploading avatar
+  const handleImageUpload = async () => {
+    console.log("handleImageUpload triggered!");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user){
+      console.log("User is not signed in");
+      return;
+    }
+    if (file){
+      console.log("Preparing to upload file!");
+      const ext = file.name.split('.').pop();
+      const uuid = crypto.randomUUID();
+      const file_path = `users/${user.id}/profile_image/${uuid}.${ext}`;
+      console.log("File path: ", file_path);
+      const { error } = await supabase.storage.from('chef-next-door-images').upload(file_path, file);
+      if (error){
+        console.log("Error: ", error.message);
+        throw error;
+      }
+      console.log("Image successfully uploaded to Supabase Storage! Retrieving public url...");
+      const { data } = supabase.storage.from('chef-next-door-images').getPublicUrl(file_path);
+      if (data.publicUrl){
+        console.log("We get the URL! Saving to user profile")
+        // Save the public URL to the user's profile
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ avatar_url: data.publicUrl })
+          .eq("id", user.id)
+        if (updateError) {
+          throw updateError;
+        }
+        setProfile((prev) => ({ ...prev, avatar_url: data.publicUrl }));
+        setProfileImageUrl(data.publicUrl);
+        setFile(null);
+      }
     }
   }
 
@@ -115,7 +156,7 @@ export default function SettingsPage() {
         first_name: profile.firstName,
         last_name: profile.lastName,
         bio: profile.bio,
-        avatar_url: profileImage,
+        avatar_url: profileImageUrl,
       })
       .eq("id", user.id)
     if (updateError) {
@@ -149,7 +190,7 @@ export default function SettingsPage() {
                 <CardHeader className="text-center">
                   <div className="relative mx-auto mb-4">
                     <Avatar className="h-24 w-24 mx-auto">
-                      <AvatarImage src={profileImage} alt="Profile" />
+                      <AvatarImage src={profileImageUrl} alt="Profile" />
                       <AvatarFallback className="bg-orange-100 text-orange-700 text-2xl">
                         {profile.firstName?.[0]?.toUpperCase() || ''}{profile.lastName?.[0]?.toUpperCase() || ''}
                       </AvatarFallback>
@@ -164,10 +205,19 @@ export default function SettingsPage() {
                       id="profile-upload"
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={handleImageChange}
                       className="hidden"
                     />
                   </div>
+                  {file && (
+                    <Button
+                      className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white"
+                      type="button"
+                      onClick={handleImageUpload}
+                    >
+                      Change Avatar
+                    </Button>
+                  )}
                   <CardTitle className="text-orange-900">{profile.firstName} {profile.lastName}</CardTitle>
                   <CardDescription className="text-orange-600">{profile.email}</CardDescription>
                 </CardHeader>
