@@ -4,12 +4,12 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChefHat, Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { login } from './actions'
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -44,12 +44,19 @@ export default function SignInPage() {
     if (!validateForm()) return
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      // Create FormData for the login action
+      const formDataForAction = new FormData()
+      formDataForAction.append('email', formData.email)
+      formDataForAction.append('password', formData.password)
+      
+      // Call the login action
+      await login(formDataForAction)
+    } catch (error) {
+      console.error('Signup error:', error)
       setIsLoading(false)
-      // Redirect to dashboard or home page
-      console.log("Sign in successful:", formData)
-    }, 2000)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,8 +79,8 @@ export default function SignInPage() {
               <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
             </Link>
             <div className="flex items-center space-x-3">
-              <span className="text-orange-700">Don't have an account?</span>
-              <Link href="/signup">
+              <span className="text-orange-700">Don&apos;t have an account?</span>
+              <Link href="/register">
                 <Button
                   variant="outline"
                   className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
@@ -86,7 +93,7 @@ export default function SignInPage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-24">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Branding */}
@@ -106,10 +113,6 @@ export default function SignInPage() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-orange-800">Save and organize favorite recipes</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                   <span className="text-orange-800">Share your culinary creations</span>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -117,25 +120,12 @@ export default function SignInPage() {
                   <span className="text-orange-800">Connect with the cooking community</span>
                 </div>
               </div>
-
-              {/* Decorative Image */}
-              <div className="relative hidden lg:block">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/images/hero-kitchen.png"
-                    alt="Cooking illustration"
-                    width={500}
-                    height={300}
-                    className="w-full h-auto opacity-80"
-                  />
-                </div>
-              </div>
             </div>
 
             {/* Right Side - Sign In Form */}
             <div className="w-full max-w-md mx-auto">
               <Card className="border-orange-200 shadow-xl">
-                <CardHeader className="text-center pb-6">
+                <CardHeader className="text-center">
                   <CardTitle className="text-3xl font-bold text-orange-900">Sign In</CardTitle>
                   <CardDescription className="text-orange-600">
                     Enter your credentials to access your account
@@ -214,8 +204,8 @@ export default function SignInPage() {
                   {/* Sign Up Link */}
                   <div className="mt-6 text-center">
                     <p className="text-orange-700">
-                      Don't have an account?{" "}
-                      <Link href="/signup" className="text-orange-600 hover:text-orange-800 font-semibold">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/register" className="text-orange-600 hover:text-orange-800 font-semibold">
                         Sign up here
                       </Link>
                     </p>

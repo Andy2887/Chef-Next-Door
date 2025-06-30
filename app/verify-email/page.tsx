@@ -18,7 +18,7 @@ export default function VerifyEmailPage() {
               <span className="text-2xl font-bold text-orange-800">Chef Next Door</span>
             </Link>
             <div className="flex items-center space-x-3">
-              <Link href="/signin">
+              <Link href="/login">
                 <Button
                   variant="outline"
                   className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
@@ -53,8 +53,8 @@ export default function VerifyEmailPage() {
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold text-orange-900">Welcome to Chef Next Door!</h2>
                 <p className="text-lg text-orange-700 leading-relaxed">
-                  You're just one step away from joining our amazing community of home chefs. We can't wait to see what
-                  delicious recipes you'll share with us!
+                  You&apos;re just one step away from joining our amazing community of home chefs. We can&apos;t wait to see what
+                  delicious recipes you&apos;ll share with us!
                 </p>
               </div>
             </div>
@@ -68,7 +68,7 @@ export default function VerifyEmailPage() {
                   </div>
                   <CardTitle className="text-3xl font-bold text-orange-900">Check Your Email</CardTitle>
                   <CardDescription className="text-orange-600 text-lg">
-                    We've sent a verification link to your email address
+                    We&apos;ve sent a verification link to your email address
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -85,7 +85,7 @@ export default function VerifyEmailPage() {
 
                   {/* Instructions */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-orange-900">What's next?</h3>
+                    <h3 className="font-semibold text-orange-900">What&apos;s next?</h3>
                     <div className="space-y-3">
                       <div className="flex items-start space-x-3">
                         <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -110,33 +110,14 @@ export default function VerifyEmailPage() {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <Link href="/signin">
+                    <Link href="/login">
                       <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg font-semibold transition-all hover:scale-105">
                         Go to Login
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      className="w-full border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
-                      onClick={() => {
-                        // Simulate resending email
-                        alert("Verification email resent!")
-                      }}
-                    >
-                      Resend Verification Email
-                    </Button>
                   </div>
 
-                  {/* Help Text */}
-                  <div className="text-center text-sm text-orange-600">
-                    <p>
-                      Didn't receive the email?{" "}
-                      <button className="text-orange-700 hover:text-orange-900 font-medium underline">
-                        Contact support
-                      </button>
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
             </div>

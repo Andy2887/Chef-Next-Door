@@ -4,16 +4,14 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChefHat, Eye, EyeOff, Mail, Lock, User } from "lucide-react"
+import { signup } from './actions'
 
 export default function SignUpPage() {
-  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -70,12 +68,19 @@ export default function SignUpPage() {
     if (!validateForm()) return
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      // Create FormData for the signup action
+      const formDataForAction = new FormData()
+      formDataForAction.append('email', formData.email)
+      formDataForAction.append('password', formData.password)
+      
+      // Call the signup action
+      await signup(formDataForAction)
+    } catch (error) {
+      console.error('Signup error:', error)
       setIsLoading(false)
-      // Redirect to email verification page
-      router.push("/verify-email")
-    }, 2000)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +104,7 @@ export default function SignUpPage() {
             </Link>
             <div className="flex items-center space-x-3">
               <span className="text-orange-700">Already have an account?</span>
-              <Link href="/signin">
+              <Link href="/login">
                 <Button
                   variant="outline"
                   className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
@@ -137,32 +142,16 @@ export default function SignUpPage() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-orange-800">Build your personal recipe collection</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                   <span className="text-orange-800">Connect with fellow food enthusiasts</span>
                 </div>
               </div>
 
-              {/* Decorative Image */}
-              <div className="relative hidden lg:block">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/images/hero-kitchen.png"
-                    alt="Cooking illustration"
-                    width={500}
-                    height={300}
-                    className="w-full h-auto opacity-80"
-                  />
-                </div>
-              </div>
             </div>
 
             {/* Right Side - Sign Up Form */}
             <div className="w-full max-w-md mx-auto">
               <Card className="border-orange-200 shadow-xl">
-                <CardHeader className="text-center pb-6">
+                <CardHeader className="text-center">
                   <CardTitle className="text-3xl font-bold text-orange-900">Create Account</CardTitle>
                   <CardDescription className="text-orange-600">Fill in your details to get started</CardDescription>
                 </CardHeader>
@@ -307,7 +296,7 @@ export default function SignUpPage() {
                   <div className="mt-6 text-center">
                     <p className="text-orange-700">
                       Already have an account?{" "}
-                      <Link href="/signin" className="text-orange-600 hover:text-orange-800 font-semibold">
+                      <Link href="/login" className="text-orange-600 hover:text-orange-800 font-semibold">
                         Sign in here
                       </Link>
                     </p>
