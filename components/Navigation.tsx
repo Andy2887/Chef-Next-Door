@@ -55,6 +55,9 @@ export default function Navigation() {
                 <Link href="/" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
                   Home
                 </Link>
+                <Link href="/my-recipes" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
+                  My Recipes
+                </Link>
                 <Link href="/recipes" className="text-orange-700 hover:text-orange-900 font-medium transition-colors">
                   Browse Recipes
                 </Link>
