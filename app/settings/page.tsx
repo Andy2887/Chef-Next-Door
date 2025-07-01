@@ -25,6 +25,8 @@ import {
   Award,
 } from "lucide-react"
 import Navigation from "@/components/Navigation"
+import ImageCropper from "@/components/ImageCropper"
+import { SuccessNotification } from "@/components/ui/success-notification"
 import { createClient } from "@/utils/supabase/client"
 
 export default function SettingsPage() {
@@ -32,7 +34,10 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [profileImageUrl, setProfileImageUrl] = useState("")
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null)
+  const [showCropper, setShowCropper] = useState(false)
+  const [originalImageUrl, setOriginalImageUrl] = useState("")
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
   const [profile, setProfile] = useState({
     firstName: "",
@@ -83,10 +88,36 @@ export default function SettingsPage() {
     if (file) {
       const reader = new FileReader()
       reader.onload = (e) => {
-        setProfileImageUrl(e.target?.result as string)
+        const imageUrl = e.target?.result as string
+        setOriginalImageUrl(imageUrl)
+        setShowCropper(true)
       }
       reader.readAsDataURL(file)
-      setFile(file);
+      setFile(file)
+    }
+  }
+
+  const handleCropComplete = (croppedImageBlob: Blob) => {
+    // Convert blob to file for upload
+    const croppedFile = new File([croppedImageBlob], file?.name || 'cropped-avatar.jpg', {
+      type: 'image/jpeg',
+    })
+    setFile(croppedFile)
+
+    // Create preview URL for the cropped image
+    const croppedImageUrl = URL.createObjectURL(croppedImageBlob)
+    setProfileImageUrl(croppedImageUrl)
+    setShowCropper(false)
+  }
+
+  const handleCropCancel = () => {
+    setShowCropper(false)
+    setFile(null)
+    setOriginalImageUrl("")
+    // Clear the input value
+    const fileInput = document.getElementById('profile-upload') as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ''
     }
   }
 
@@ -123,8 +154,14 @@ export default function SettingsPage() {
           throw updateError;
         }
         setProfile((prev) => ({ ...prev, avatar_url: data.publicUrl }));
+        // Clean up object URL if it exists
+        if (profileImageUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(profileImageUrl)
+        }
         setProfileImageUrl(data.publicUrl);
         setFile(null);
+        // Show success notification
+        setShowSuccessNotification(true);
       }
     }
   }
@@ -217,7 +254,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={handleImageUpload}
                       >
-                        Change Avatar
+                        Upload Avatar
                       </Button>
                       <Button
                         variant="ghost"
@@ -225,6 +262,10 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => {
                           setFile(null)
+                          // Clean up object URL if it exists
+                          if (profileImageUrl.startsWith('blob:')) {
+                            URL.revokeObjectURL(profileImageUrl)
+                          }
                           setProfileImageUrl(profile.avatar_url)
                           // Clear the input value to allow selecting the same file again
                           const fileInput = document.getElementById('profile-upload') as HTMLInputElement
@@ -487,6 +528,22 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Image Cropper Modal */}
+      {showCropper && (
+        <ImageCropper
+          src={originalImageUrl}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
+
+      {/* Success Notification */}
+      <SuccessNotification
+        message="Avatar updated successfully!"
+        isVisible={showSuccessNotification}
+        onClose={() => setShowSuccessNotification(false)}
+      />
     </div>
   )
 }
