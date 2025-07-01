@@ -210,13 +210,32 @@ export default function SettingsPage() {
                     />
                   </div>
                   {file && (
-                    <Button
-                      className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white"
-                      type="button"
-                      onClick={handleImageUpload}
-                    >
-                      Change Avatar
-                    </Button>
+                    <div className="flex flex-col gap-2 items-center">
+                      <Button
+                        variant="outline"
+                        className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-white/80 backdrop-blur-sm transition-all"
+                        type="button"
+                        onClick={handleImageUpload}
+                      >
+                        Change Avatar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="text-orange-500 hover:text-orange-700"
+                        type="button"
+                        onClick={() => {
+                          setFile(null)
+                          setProfileImageUrl(profile.avatar_url)
+                          // Clear the input value to allow selecting the same file again
+                          const fileInput = document.getElementById('profile-upload') as HTMLInputElement
+                          if (fileInput) {
+                            fileInput.value = ''
+                          }
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   )}
                   <CardTitle className="text-orange-900">{profile.firstName} {profile.lastName}</CardTitle>
                   <CardDescription className="text-orange-600">{profile.email}</CardDescription>

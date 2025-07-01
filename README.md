@@ -126,6 +126,17 @@ We welcome contributions! Please follow these steps:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 📝 TODO
+
+- Users need to be able to crop the images they upload
+- On the root page, the author of recipes is not showing up
+- Users should not be able to access the register page if they already login
+- Comments function
+- "My recipes" section
+- Change Password function
+- Delete account function
+- Redesign the upload profile image button
+
 ## 🔗 Resources
 
 ### Supabase Auth

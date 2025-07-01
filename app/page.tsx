@@ -26,6 +26,7 @@ export default function HomePage() {
     // add other fields as needed
   }
   const [featuredRecipes, setFeaturedRecipes] = useState<Recipe[]>([])
+  const [chefs, setChefs] = useState<Record<string, { first_name: string; last_name: string }>>({})
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -46,6 +47,27 @@ export default function HomePage() {
     }
     fetchFeatured()
   }, [])
+
+  useEffect(() => {
+    const fetchChefs = async () => {
+      const supabase = createClient()
+      const chefIds = Array.from(new Set(featuredRecipes.map(r => r.chef_id).filter(Boolean)))
+      if (chefIds.length === 0) return
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', chefIds)
+      if (!error && data) {
+        const chefMap: Record<string, { first_name: string; last_name: string }> = {}
+        data.forEach((chef: { id: string; first_name: string; last_name: string }) => {
+          chefMap[chef.id] = { first_name: chef.first_name, last_name: chef.last_name }
+        })
+        setChefs(chefMap)
+      }
+    }
+    fetchChefs()
+    // Only run when featuredRecipes changes
+  }, [featuredRecipes])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
@@ -178,7 +200,9 @@ export default function HomePage() {
                     <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
                       {recipe.title}
                     </CardTitle>
-                    <CardDescription className="text-orange-600">by {recipe.author ?? "Unknown"}</CardDescription>
+                    <CardDescription className="text-orange-600">
+                      by {recipe.chef_id && chefs[recipe.chef_id] ? `${chefs[recipe.chef_id].first_name} ${chefs[recipe.chef_id].last_name}` : "Unknown"}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
