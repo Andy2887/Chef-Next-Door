@@ -239,7 +239,7 @@ export default function SettingsPage() {
                     </Avatar>
                     <label
                       htmlFor="profile-upload"
-                      className="absolute bottom-0 right-0 bg-orange-600 text-white rounded-full p-2 cursor-pointer hover:bg-orange-700 transition-colors shadow-lg"
+                      className="absolute bottom-0 right-0 bg-[#e85d04] text-white rounded-full p-2 cursor-pointer hover:bg-orange-700 transition-colors shadow-lg"
                     >
                       <Camera className="h-4 w-4" />
                     </label>
@@ -373,7 +373,7 @@ export default function SettingsPage() {
                     </div>
                     {profileError && <div className="text-red-600 text-sm">{profileError}</div>}
                     {error && <div className="text-red-600 text-sm">{error}</div>}
-                    <Button className="bg-orange-600 hover:bg-orange-700 text-white" type="submit" disabled={saving}>
+                    <Button className="bg-[#e85d04] hover:bg-orange-700 text-white" type="submit" disabled={saving}>
                       <Save className="h-4 w-4 mr-2" />
                       {saving ? "Saving..." : "Save Changes"}
                     </Button>
@@ -457,7 +457,7 @@ export default function SettingsPage() {
                       <li>• Contains at least one special character</li>
                     </ul>
                   </div>
-                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button className="bg-[#e85d04] hover:bg-orange-700 text-white">
                     <Save className="h-4 w-4 mr-2" />
                     Update Password
                   </Button>

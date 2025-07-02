@@ -204,7 +204,7 @@ export default function RecipeDetailPage() {
                   <ol className="space-y-4">
                     {recipe.instructions.map((instruction, index) => (
                       <li key={index} className="flex items-start space-x-4">
-                        <div className="bg-orange-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
+                        <div className="bg-[#e85d04] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
                           {index + 1}
                         </div>
                         <p className="text-orange-800 leading-relaxed">{instruction}</p>
@@ -231,7 +231,7 @@ export default function RecipeDetailPage() {
                       onChange={(e) => setNewComment(e.target.value)}
                       className="border-orange-200 focus:border-orange-400 min-h-[100px]"
                     />
-                    <Button className="bg-orange-600 hover:bg-orange-700 text-white">Post Comment</Button>
+                    <Button className="bg-[#e85d04] hover:bg-orange-700 text-white">Post Comment</Button>
                   </div>
 
                   <Separator className="bg-orange-200" />

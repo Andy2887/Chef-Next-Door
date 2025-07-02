@@ -98,7 +98,7 @@ export default function Navigation() {
                       </Button>
                     </Link>
                     <Link href="/register">
-                      <Button className="bg-orange-600 hover:bg-orange-700 text-white transition-all">
+                      <Button className="bg-[#e85d04] hover:bg-orange-700 text-white transition-all">
                         Join Now
                       </Button>
                     </Link>

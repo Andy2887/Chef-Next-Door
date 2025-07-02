@@ -389,7 +389,7 @@ export default function CreateRecipeForm() {
                       />
                       <Label
                         htmlFor="image-upload"
-                        className="inline-flex items-center justify-center px-4 py-2 mt-4 bg-orange-600 text-white rounded-md hover:bg-orange-700 cursor-pointer transition-colors"
+                        className="inline-flex items-center justify-center px-4 py-2 mt-4 bg-[#e85d04] text-white rounded-md hover:bg-orange-700 cursor-pointer transition-colors"
                       >
                         <Upload className="h-4 w-4 mr-2" />
                         Upload Image
@@ -451,7 +451,7 @@ export default function CreateRecipeForm() {
               <CardContent className="space-y-4">
                 {instructions.map((instruction, index) => (
                   <div key={index} className="flex items-start space-x-2">
-                    <div className="bg-orange-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
+                    <div className="bg-[#e85d04] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
                       {index + 1}
                     </div>
                     <div className="flex-1">
@@ -512,7 +512,7 @@ export default function CreateRecipeForm() {
                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     className="border-orange-200 focus:border-orange-400"
                   />
-                  <Button type="button" onClick={addTag} className="bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button type="button" onClick={addTag} className="bg-[#e85d04] hover:bg-orange-700 text-white">
                     Add
                   </Button>
                 </div>
@@ -538,7 +538,7 @@ export default function CreateRecipeForm() {
                 <Button
                   type="submit"
                   disabled={isPublishing}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#e85d04] hover:bg-orange-700 text-white px-8 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPublishing ? (
                     <>

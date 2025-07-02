@@ -145,7 +145,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ src, onCropComplete, onCanc
             </Button>
             <Button
               onClick={handleCropComplete}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-[#e85d04] hover:bg-orange-700 text-white"
               disabled={!completedCrop}
             >
               <Check className="h-4 w-4 mr-2" />

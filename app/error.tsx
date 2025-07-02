@@ -45,7 +45,7 @@ export default function Error({
           <div className="flex flex-col space-y-3">
             <Button 
               onClick={reset}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-[#e85d04] hover:bg-orange-700 text-white"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Try again

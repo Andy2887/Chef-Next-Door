@@ -92,7 +92,7 @@ export default function VerifyEmailPage() {
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <Link href="/login">
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg font-semibold transition-all hover:scale-105">
+                      <Button className="w-full bg-[#e85d04] hover:bg-orange-700 text-white py-3 text-lg font-semibold transition-all hover:scale-105">
                         Go to Login
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>

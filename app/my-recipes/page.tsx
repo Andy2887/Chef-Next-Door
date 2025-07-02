@@ -245,7 +245,7 @@ export default function MyRecipesPage() {
           />
           <div className="absolute top-3 right-3 flex items-center space-x-2">
             {recipe.featured && (
-              <Badge className="bg-orange-600 text-white">
+              <Badge className="bg-[#e85d04] text-white">
                 <Sparkles className="h-3 w-3 mr-1" />
                 Featured
               </Badge>
@@ -352,7 +352,7 @@ export default function MyRecipesPage() {
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()} className="bg-orange-600 hover:bg-orange-700 text-white">
+          <Button onClick={() => window.location.reload()} className="bg-[#e85d04] hover:bg-orange-700 text-white">
             Try Again
           </Button>
         </div>
@@ -392,7 +392,7 @@ export default function MyRecipesPage() {
                 </div>
               </div>
               <Link href="/create">
-                <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                <Button className="bg-[#e85d04] hover:bg-orange-700 text-white">
                   <Plus className="h-4 w-4 mr-2" />
                   Create New Recipe
                 </Button>
@@ -450,7 +450,7 @@ export default function MyRecipesPage() {
                 onClick={() => setSortBy("newest")}
                 className={
                   sortBy === "newest"
-                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    ? "bg-[#e85d04] hover:bg-orange-700 text-white"
                     : "border-orange-300 text-orange-700 hover:bg-orange-100 bg-white"
                 }
               >
@@ -462,7 +462,7 @@ export default function MyRecipesPage() {
                 onClick={() => setSortBy("popular")}
                 className={
                   sortBy === "popular"
-                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    ? "bg-[#e85d04] hover:bg-orange-700 text-white"
                     : "border-orange-300 text-orange-700 hover:bg-orange-100 bg-white"
                 }
               >
@@ -490,7 +490,7 @@ export default function MyRecipesPage() {
                     : "You haven't created any recipes yet. Start sharing your culinary creations!"}
                 </p>
                 <Link href="/create">
-                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button className="bg-[#e85d04] hover:bg-orange-700 text-white">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Recipe
                   </Button>

@@ -134,7 +134,7 @@ export default function HomePage() {
                   <Link href="/create">
                     <Button
                       size="lg"
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                      className="bg-[#e85d04] hover:bg-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 hover:scale-105"
                     >
                       Start Cooking
                     </Button>
@@ -246,7 +246,7 @@ export default function HomePage() {
           <Link href="/create">
             <Button
               size="lg"
-              className="bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-orange-500/25 transition-all hover:scale-105"
+              className="bg-[#e85d04] hover:bg-orange-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-orange-500/25 transition-all hover:scale-105"
             >
               Get Started Today
             </Button>

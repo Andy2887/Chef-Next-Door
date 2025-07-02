@@ -96,7 +96,7 @@ export default function RecipesDashboard() {
           </div>
           {recipe.featured && (
             <div className="absolute bottom-3 left-3">
-              <Badge className="bg-orange-600 text-white">
+              <Badge className="bg-[#e85d04] text-white">
                 <Sparkles className="h-3 w-3 mr-1" />
                 Featured
               </Badge>
@@ -201,7 +201,7 @@ export default function RecipesDashboard() {
               <button
                 onClick={() => setActiveTab("featured")}
                 className={`px-6 py-3 rounded-md font-medium transition-all ${
-                  activeTab === "featured" ? "bg-orange-600 text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
+                  activeTab === "featured" ? "bg-[#e85d04] text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
                 }`}
               >
                 <Sparkles className="h-4 w-4 mr-2 inline" />
@@ -210,7 +210,7 @@ export default function RecipesDashboard() {
               <button
                 onClick={() => setActiveTab("latest")}
                 className={`px-6 py-3 rounded-md font-medium transition-all ${
-                  activeTab === "latest" ? "bg-orange-600 text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
+                  activeTab === "latest" ? "bg-[#e85d04] text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
                 }`}
               >
                 <TrendingUp className="h-4 w-4 mr-2 inline" />
@@ -266,7 +266,7 @@ export default function RecipesDashboard() {
           </p>
           <div className="max-w-md mx-auto flex gap-3">
             <Input placeholder="Enter your email" className="border-orange-200 focus:border-orange-400" />
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white">Subscribe</Button>
+            <Button className="bg-[#e85d04] hover:bg-orange-700 text-white">Subscribe</Button>
           </div>
         </div>
       </section>
