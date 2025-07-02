@@ -40,8 +40,10 @@ export async function signup(form: SignUpForm) {
 
   if (profileError) {
     console.error('Profile creation error:', profileError)
-    // Note: User is still created in auth, but profile creation failed
-    // You might want to handle this differently depending on your needs
+    if (profileError.message === 'duplicate key value violates unique constraint "profiles_email_key"'){
+      return { error: 'Email already exists!' }
+    }
+    return { error: profileError.message }
   }
 
   revalidatePath('/', 'layout')

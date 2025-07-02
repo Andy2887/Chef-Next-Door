@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { login } from './actions'
 import Navigation from "@/components/Navigation"
+import { FailNotification } from "@/components/ui/fail-notification"
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -20,6 +21,8 @@ export default function SignInForm() {
   })
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [showFailNotification, setShowFailNotification] = useState(false)
+  const [failMessage, setFailMessage] = useState("")
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
@@ -53,9 +56,18 @@ export default function SignInForm() {
       formDataForAction.append('password', formData.password)
       
       // Call the login action
-      await login(formDataForAction)
+      const result = await login(formDataForAction)
+      
+      // Check if there's an error from the login action
+      if (result?.error) {
+        setFailMessage(result.error)
+        setShowFailNotification(true)
+        setIsLoading(false)
+      }
     } catch (error) {
-      console.error('Signup error:', error)
+      console.error('Login error:', error)
+      setFailMessage('Server Side Error. Please try again later.')
+      setShowFailNotification(true)
       setIsLoading(false)
     }
   }
@@ -72,6 +84,15 @@ export default function SignInForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
       <Navigation />
+
+      {/* Fail Notification */}
+      <FailNotification
+        message={failMessage}
+        isVisible={showFailNotification}
+        onClose={() => setShowFailNotification(false)}
+        autoClose={true}
+        duration={5000}
+      />
 
       <div className="container mx-auto px-4 py-24">
         <div className="max-w-6xl mx-auto">

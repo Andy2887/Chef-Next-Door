@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
 import { signup, SignUpForm } from './actions'
 import Navigation from "@/components/Navigation"
+import { FailNotification } from "@/components/ui/fail-notification"
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +26,8 @@ export default function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [showFailNotification, setShowFailNotification] = useState(false)
+  const [failMessage, setFailMessage] = useState("")
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
@@ -71,12 +74,21 @@ export default function RegisterForm() {
 
     setIsLoading(true)
     
-    // Call the signup action with type-safe formData
-    const result = await signup(formData)
-    
-    // If there's an error, throw it to trigger error.tsx
-    if (result?.error) {
-      throw new Error(result.error)
+    try {
+      // Call the signup action with type-safe formData
+      const result = await signup(formData)
+      
+      // Check if there's an error from the signup action
+      if (result?.error) {
+        setFailMessage(result.error)
+        setShowFailNotification(true)
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.error('Signup error:', error)
+      setFailMessage('An unexpected error occurred. Please try again.')
+      setShowFailNotification(true)
+      setIsLoading(false)
     }
   }
 
@@ -98,6 +110,15 @@ export default function RegisterForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
       <Navigation />
+
+      {/* Fail Notification */}
+      <FailNotification
+        message={failMessage}
+        isVisible={showFailNotification}
+        onClose={() => setShowFailNotification(false)}
+        autoClose={true}
+        duration={5000}
+      />
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
