@@ -28,8 +28,10 @@ import Navigation from "@/components/Navigation"
 import ImageCropper from "@/components/ImageCropper"
 import { SuccessNotification } from "@/components/ui/success-notification"
 import { createClient } from "@/utils/supabase/client"
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -198,6 +200,9 @@ export default function SettingsPage() {
       .eq("id", user.id)
     if (updateError) {
       setError("Failed to update profile")
+    } else {
+      // Show success notification
+      setShowSuccessNotification(true)
     }
     setSaving(false)
   }
@@ -473,6 +478,7 @@ export default function SettingsPage() {
                     <Button
                       variant="outline"
                       className="border-orange-300 text-orange-700 hover:bg-orange-100 h-auto p-4 flex flex-col items-center space-y-2 bg-transparent"
+                      onClick={() => router.push('/my-recipes')}
                     >
                       <BookOpen className="h-6 w-6" />
                       <span>View My Recipes</span>
@@ -540,7 +546,7 @@ export default function SettingsPage() {
 
       {/* Success Notification */}
       <SuccessNotification
-        message="Avatar updated successfully!"
+        message="Profile updated successfully!"
         isVisible={showSuccessNotification}
         onClose={() => setShowSuccessNotification(false)}
       />

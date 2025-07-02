@@ -32,6 +32,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/utils/supabase/client"
 import Navigation from "@/components/Navigation"
+import { SuccessNotification } from "@/components/ui/success-notification"
 import { useRouter } from "next/navigation"
 
 interface Recipe {
@@ -71,6 +72,10 @@ export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -159,6 +164,74 @@ export default function MyRecipesPage() {
     router.push(`/recipes/${recipeId}`)
   }
 
+  const handleDeleteRecipe = (recipeId: string) => {
+    setRecipeToDelete(recipeId)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteRecipe = async () => {
+    if (!recipeToDelete) return
+
+    setDeleting(true)
+    try {
+      const supabase = createClient()
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setError('User not authenticated')
+        return
+      }
+
+      const { error } = await supabase
+        .from('recipes')
+        .delete()
+        .eq('id', recipeToDelete)
+
+      if (error) {
+        console.error('Error deleting recipe:', error)
+        setError('Failed to delete recipe')
+        return
+      }
+
+      // Update profile recipe count in Supabase using the decrement function
+      const { error: profileError } = await supabase.rpc('decrement_recipe_count', {
+        user_id: user.id
+      })
+      
+      if (profileError) {
+        console.error('Error updating profile recipe count:', profileError)
+        // Don't fail the deletion if profile update fails
+      }
+
+      // Remove recipe from state
+      setRecipes(prev => prev.filter(recipe => recipe.id !== recipeToDelete))
+      
+      // Update profile recipe count in local state
+      if (profile) {
+        setProfile(prev => prev ? { ...prev, num_recipes: prev.num_recipes - 1 } : null)
+      }
+
+      // Show success notification
+      setShowSuccessNotification(true)
+      
+      // Close dialog and reset state
+      setDeleteDialogOpen(false)
+      setRecipeToDelete(null)
+    } catch (err) {
+      console.error('Unexpected error deleting recipe:', err)
+      setError('An unexpected error occurred while deleting recipe')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const cancelDeleteRecipe = () => {
+    setDeleteDialogOpen(false)
+    setRecipeToDelete(null)
+  }
+
   const RecipeCard = ({ recipe }: { recipe: Recipe }) => (
     <Link href={`/recipes/${recipe.id}`} className="block">
       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-[1.02] group h-full cursor-pointer">
@@ -210,7 +283,10 @@ export default function MyRecipesPage() {
                   Edit Recipe
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600" onClick={(e) => e.preventDefault()}>
+                <DropdownMenuItem className="text-red-600" onClick={(e) => {
+                  e.preventDefault()
+                  handleDeleteRecipe(recipe.id)
+                }}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Recipe
                 </DropdownMenuItem>
@@ -424,6 +500,42 @@ export default function MyRecipesPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Recipe</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this recipe? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={cancelDeleteRecipe}
+                disabled={deleting}
+                className="bg-black text-white border-black hover:bg-gray-800"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmDeleteRecipe}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Notification */}
+      <SuccessNotification
+        message="Recipe deleted successfully!"
+        isVisible={showSuccessNotification}
+        onClose={() => setShowSuccessNotification(false)}
+      />
     </div>
   )
 }

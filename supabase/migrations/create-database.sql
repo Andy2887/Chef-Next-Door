@@ -46,3 +46,23 @@ CREATE TABLE public.recipes (
   CONSTRAINT recipes_pkey PRIMARY KEY (id),
   CONSTRAINT recipes_chef_id_fkey FOREIGN KEY (chef_id) REFERENCES public.profiles(id)
 );
+
+-- Function to increment recipe count
+CREATE OR REPLACE FUNCTION increment_recipe_count(user_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.profiles 
+  SET num_recipes = num_recipes + 1 
+  WHERE id = user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to decrement recipe count
+CREATE OR REPLACE FUNCTION decrement_recipe_count(user_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.profiles 
+  SET num_recipes = GREATEST(num_recipes - 1, 0)
+  WHERE id = user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

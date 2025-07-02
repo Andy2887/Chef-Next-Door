@@ -160,6 +160,17 @@ export default function CreateRecipeForm() {
         },
       ])
       if (error) throw error
+
+      // Update profile recipe count in Supabase
+      const { error: profileError } = await supabase.rpc('increment_recipe_count', {
+        user_id: user.id
+      })
+      
+      if (profileError) {
+        console.error('Error updating profile recipe count:', profileError)
+        // Don't throw error here as the recipe was already created successfully
+      }
+
       setShowSuccessNotification(true)
       setTimeout(() => {
         setShowSuccessNotification(false)
