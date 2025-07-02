@@ -29,6 +29,7 @@ import ImageCropper from "@/components/ImageCropper"
 import { SuccessNotification } from "@/components/ui/success-notification"
 import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
+import LoadingScreen from "@/components/ui/loading-screen"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -40,6 +41,7 @@ export default function SettingsPage() {
   const [showCropper, setShowCropper] = useState(false)
   const [originalImageUrl, setOriginalImageUrl] = useState("")
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [profile, setProfile] = useState({
     firstName: "",
@@ -60,6 +62,7 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setError("Not logged in")
+        setLoading(false)
         return
       }
       const { data, error } = await supabase
@@ -69,6 +72,7 @@ export default function SettingsPage() {
         .single()
       if (error) {
         setError("Failed to load profile")
+        setLoading(false)
       } else if (data) {
         setProfile({
           firstName: data.first_name || "",
@@ -80,6 +84,7 @@ export default function SettingsPage() {
           rating: data.rating ?? 0,
         })
         setProfileImageUrl(data.avatar_url || "")
+        setLoading(false)
       }
     }
     fetchProfile()
@@ -205,6 +210,10 @@ export default function SettingsPage() {
       setShowSuccessNotification(true)
     }
     setSaving(false)
+  }
+
+  if (loading) {
+    return <LoadingScreen message="Loading your profile..." />
   }
 
   return (

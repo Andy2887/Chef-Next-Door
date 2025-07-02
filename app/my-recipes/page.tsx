@@ -34,6 +34,7 @@ import { createClient } from "@/utils/supabase/client"
 import Navigation from "@/components/Navigation"
 import { SuccessNotification } from "@/components/ui/success-notification"
 import { useRouter } from "next/navigation"
+import LoadingScreen from "@/components/ui/loading-screen"
 
 interface Recipe {
   id: string
@@ -344,14 +345,7 @@ export default function MyRecipesPage() {
   )
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
-        <div className="text-center">
-          <ChefHat className="h-16 w-16 text-orange-400 mx-auto mb-4 animate-pulse" />
-          <p className="text-orange-700">Loading your recipes...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading your recipes..." />
   }
 
   if (error) {

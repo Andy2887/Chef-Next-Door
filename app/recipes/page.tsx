@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChefHat, Clock, Users, Star, Heart, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
 import { createClient } from "@/utils/supabase/client"
+import LoadingScreen from "@/components/ui/loading-screen"
 
 type Recipe = {
   id: string
@@ -41,6 +42,7 @@ type Recipe = {
 
 export default function RecipesDashboard() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -52,6 +54,7 @@ export default function RecipesDashboard() {
       if (!error && data) {
         setRecipes(data as Recipe[])
       }
+      setLoading(false)
     }
     fetchRecipes()
   }, [])
@@ -151,6 +154,10 @@ export default function RecipesDashboard() {
     </Link>
   )
 
+  if (loading) {
+    return <LoadingScreen message="Loading recipes..." />
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
       <Navigation />
@@ -172,12 +179,18 @@ export default function RecipesDashboard() {
       <div className="container mx-auto px-4 py-12">
         {/* Featured Recipes Section */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
+          <div className="mb-8 text-center">
             <div>
-              <h2 className="text-4xl font-bold text-orange-900 mb-2">Featured Recipes</h2>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-700 to-amber-600 bg-clip-text text-transparent mb-2">Featured Recipes</h2>
               <p className="text-orange-700">Hand-picked favorites from our community</p>
+              <div className="flex items-center justify-center gap-3 my-4">
+                <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
+                <div className="relative">
+                  <ChefHat className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
+              </div>
             </div>
-            <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{featuredRecipes.length} recipes</Badge>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {featuredRecipes.map((recipe) => (
@@ -188,12 +201,12 @@ export default function RecipesDashboard() {
 
         {/* Latest Recipes Section */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
+          <div className="mb-8 text-center">
             <div>
               <h2 className="text-4xl font-bold text-orange-900 mb-2">Latest Recipes</h2>
               <p className="text-orange-700">Fresh recipes from our newest contributors</p>
+              <hr className="mt-4 border-orange-200 w-24 mx-auto" />
             </div>
-            <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{latestRecipes.length} recipes</Badge>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {latestRecipes.map((recipe) => (

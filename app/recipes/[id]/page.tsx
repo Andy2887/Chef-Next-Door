@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Clock, Users, Star, Heart, Share2, Bookmark } from "lucide-react"
 import Navigation from "@/components/Navigation"
 import { createClient } from "@/utils/supabase/client"
+import LoadingScreen from "@/components/ui/loading-screen"
 
 type Recipe = {
   id: string
@@ -67,7 +68,9 @@ export default function RecipeDetailPage() {
     fetchRecipe()
   }, [])
 
-  if (loading) return <div>Loading...</div>
+  if (loading) {
+    return <LoadingScreen message="Loading recipe..." />
+  }
   if (!recipe) return <div>Recipe not found.</div>
 
   return (

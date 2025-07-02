@@ -16,6 +16,7 @@ import Navigation from "@/components/Navigation"
 import { useRouter } from "next/navigation"
 import { SuccessNotification } from "@/components/ui/success-notification"
 import { createClient } from "@/utils/supabase/client"
+import LoadingScreen from "@/components/ui/loading-screen"
 
 interface EditRecipeFormProps {
   recipeId: string
@@ -256,14 +257,7 @@ export default function EditRecipeForm({ recipeId }: EditRecipeFormProps) {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-orange-700">Loading recipe...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading recipe..." />
   }
 
   if (!recipe) {

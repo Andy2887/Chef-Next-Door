@@ -174,8 +174,26 @@ export default function HomePage() {
       <section className="py-20 bg-white relative z-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-orange-900 mb-6">Featured Recipes</h2>
-            <p className="text-xl text-orange-700 max-w-2xl mx-auto">
+            {/* Enhanced Featured Recipes Title */}
+            <div className="relative mb-8">
+
+              {/* Main title with enhanced styling */}
+              <div className="relative">
+                <h2 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-orange-600 via-orange-700 to-amber-600 bg-clip-text text-transparent mb-2 animate-in slide-in-from-bottom duration-700">
+                  Featured Recipes
+                </h2>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
+                  <div className="relative">
+                    <ChefHat className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced subtitle with animation */}
+            <p className="text-xl text-orange-700 max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-500">
               Discover the most loved recipes from our community of passionate home cooks
             </p>
           </div>
