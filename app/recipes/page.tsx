@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ChefHat, Clock, Users, Star, Search, Filter, Heart, TrendingUp, Sparkles } from "lucide-react"
+import { ChefHat, Clock, Users, Star, Heart, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
 import { createClient } from "@/utils/supabase/client"
 
@@ -40,8 +40,6 @@ type Recipe = {
 }
 
 export default function RecipesDashboard() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("featured")
   const [recipes, setRecipes] = useState<Recipe[]>([])
 
   useEffect(() => {
@@ -162,99 +160,47 @@ export default function RecipesDashboard() {
         <div className="absolute inset-0 bg-[url('/images/hero-kitchen.png')] opacity-5 bg-cover bg-center"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-orange-900 mb-4">Browse Recipes</h1>
+            <h1 className="text-6xl font-bold text-orange-900 mb-4">Browse Recipes</h1>
             <p className="text-xl text-orange-700 max-w-2xl mx-auto">
               Discover amazing recipes from our community of passionate home chefs
             </p>
-          </div>
-
-          {/* Search and Filter Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-500" />
-                <Input
-                  placeholder="Search recipes, ingredients, or chefs..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-orange-200 focus:border-orange-400 bg-white/80 backdrop-blur-sm"
-                />
-              </div>
-              <Button
-                variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-100 bg-white/80 backdrop-blur-sm"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white rounded-lg p-1 shadow-lg border border-orange-200">
-            <div className="flex space-x-1">
-              <button
-                onClick={() => setActiveTab("featured")}
-                className={`px-6 py-3 rounded-md font-medium transition-all ${
-                  activeTab === "featured" ? "bg-[#e85d04] text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
-                }`}
-              >
-                <Sparkles className="h-4 w-4 mr-2 inline" />
-                Featured Recipes
-              </button>
-              <button
-                onClick={() => setActiveTab("latest")}
-                className={`px-6 py-3 rounded-md font-medium transition-all ${
-                  activeTab === "latest" ? "bg-[#e85d04] text-white shadow-md" : "text-orange-700 hover:bg-orange-50"
-                }`}
-              >
-                <TrendingUp className="h-4 w-4 mr-2 inline" />
-                Latest Recipes
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Featured Recipes Section */}
-        {activeTab === "featured" && (
-          <section className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-orange-900 mb-2">Featured Recipes</h2>
-                <p className="text-orange-700">Hand-picked favorites from our community</p>
-              </div>
-              <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{featuredRecipes.length} recipes</Badge>
+        <section className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-orange-900 mb-2">Featured Recipes</h2>
+              <p className="text-orange-700">Hand-picked favorites from our community</p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredRecipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
-          </section>
-        )}
+            <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{featuredRecipes.length} recipes</Badge>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {featuredRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+        </section>
 
         {/* Latest Recipes Section */}
-        {activeTab === "latest" && (
-          <section className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-orange-900 mb-2">Latest Recipes</h2>
-                <p className="text-orange-700">Fresh recipes from our newest contributors</p>
-              </div>
-              <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{latestRecipes.length} recipes</Badge>
+        <section className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-orange-900 mb-2">Latest Recipes</h2>
+              <p className="text-orange-700">Fresh recipes from our newest contributors</p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {latestRecipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
-          </section>
-        )}
+            <Badge className="bg-orange-100 text-orange-700 px-4 py-2">{latestRecipes.length} recipes</Badge>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {latestRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Newsletter Section */}

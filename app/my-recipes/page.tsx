@@ -164,6 +164,10 @@ export default function MyRecipesPage() {
     router.push(`/recipes/${recipeId}`)
   }
 
+  const handleEditRecipe = (recipeId: string) => {
+    router.push(`/edit/${recipeId}`)
+  }
+
   const handleDeleteRecipe = (recipeId: string) => {
     setRecipeToDelete(recipeId)
     setDeleteDialogOpen(true)
@@ -278,7 +282,10 @@ export default function MyRecipesPage() {
                   <Eye className="h-4 w-4 mr-2" />
                   View Recipe
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+                <DropdownMenuItem onClick={(e) => {
+                  e.preventDefault()
+                  handleEditRecipe(recipe.id)
+                }}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Recipe
                 </DropdownMenuItem>
