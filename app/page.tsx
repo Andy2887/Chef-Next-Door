@@ -206,7 +206,7 @@ export default function HomePage() {
           <div 
             className={`absolute inset-0 flex items-center justify-center z-30 transition-all duration-500 ${
               showGoldenStar ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            } md:items-center items-start md:pt-0 pt-20`}
           >
             <div className="relative">
               {/* Main Star */}
