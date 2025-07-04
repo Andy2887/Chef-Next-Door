@@ -92,7 +92,10 @@ export default function RecipesDashboard() {
           </div>
           <div className="absolute top-3 left-3">
             <Badge className={getDifficultyColor(recipe.difficulty_level || "")}>
-              {recipe.difficulty_level}
+              {recipe.difficulty_level ? 
+                recipe.difficulty_level.charAt(0).toUpperCase() + recipe.difficulty_level.slice(1).toLowerCase() : 
+                "Unknown"
+              }
             </Badge>
           </div>
           {recipe.featured && (
