@@ -6,12 +6,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Users, Star, ChefHat } from "lucide-react"
+import { Clock, Users, Star, ChefHat, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
 import { createClient } from "@/utils/supabase/client"
 
 export default function HomePage() {
   const [scrollY, setScrollY] = useState(0)
+  const [showGoldenStar, setShowGoldenStar] = useState(false)
+  const [showFeaturedContent, setShowFeaturedContent] = useState(false)
+  const [animationTriggered, setAnimationTriggered] = useState(false)
+  
   type Recipe = {
     id: string
     title: string
@@ -29,10 +33,35 @@ export default function HomePage() {
   const [chefs, setChefs] = useState<Record<string, { first_name: string; last_name: string }>>({})
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+      
+      // Check if Featured Recipes section is in view and animation hasn't been triggered
+      if (!animationTriggered) {
+        const featuredSection = document.getElementById('featured-recipes-section')
+        if (featuredSection) {
+          const rect = featuredSection.getBoundingClientRect()
+          const isInView = rect.top < window.innerHeight && rect.bottom > 0
+          
+          if (isInView) {
+            setAnimationTriggered(true)
+            setShowGoldenStar(true)
+            
+            // Hide star after 1 second and show content
+            setTimeout(() => {
+              setShowGoldenStar(false)
+              setTimeout(() => {
+                setShowFeaturedContent(true)
+              }, 300) // Small delay for smooth transition
+            }, 1000)
+          }
+        }
+      }
+    }
+    
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [animationTriggered])
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -171,83 +200,168 @@ export default function HomePage() {
       </section>
 
       {/* Featured Recipes Section */}
-      <section className="py-20 bg-white relative z-20">
+      <section id="featured-recipes-section" className="py-20 bg-white relative z-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            {/* Enhanced Featured Recipes Title */}
-            <div className="relative mb-8">
-
-              {/* Main title with enhanced styling */}
-              <div className="relative">
-                <h2 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-orange-600 via-orange-700 to-amber-600 bg-clip-text text-transparent mb-2 animate-in slide-in-from-bottom duration-700">
-                  Featured Recipes
-                </h2>
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
-                  <div className="relative">
-                    <ChefHat className="h-8 w-8 text-orange-600" />
-                  </div>
-                  <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
-                </div>
+          {/* Golden Star Animation */}
+          <div 
+            className={`absolute inset-0 flex items-center justify-center z-30 transition-all duration-500 ${
+              showGoldenStar ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <div className="relative">
+              {/* Main Star */}
+              <Star 
+                className={`h-32 w-32 text-yellow-500 fill-current transform transition-all duration-500 ${
+                  showGoldenStar ? 'scale-100 rotate-0' : 'scale-0 rotate-45'
+                }`} 
+              />
+              
+              {/* Pulsing Star Background */}
+              <div className="absolute inset-0 animate-ping">
+                <Star className="h-32 w-32 text-yellow-400 fill-current opacity-75" />
+              </div>
+              
+              {/* Sparkles around the star */}
+              <div className="absolute inset-0">
+                {/* Top sparkles */}
+                <Sparkles 
+                  className={`absolute -top-8 left-1/2 transform -translate-x-1/2 h-6 w-6 text-yellow-400 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '0.2s' }}
+                />
+                <Sparkles 
+                  className={`absolute -top-4 -left-6 h-4 w-4 text-yellow-300 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '0.4s' }}
+                />
+                <Sparkles 
+                  className={`absolute -top-4 -right-6 h-4 w-4 text-yellow-300 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '0.6s' }}
+                />
+                
+                {/* Side sparkles */}
+                <Sparkles 
+                  className={`absolute top-1/2 -left-10 transform -translate-y-1/2 h-5 w-5 text-yellow-400 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '0.8s' }}
+                />
+                <Sparkles 
+                  className={`absolute top-1/2 -right-10 transform -translate-y-1/2 h-5 w-5 text-yellow-400 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '1.0s' }}
+                />
+                
+                {/* Bottom sparkles */}
+                <Sparkles 
+                  className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 h-6 w-6 text-yellow-400 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '1.2s' }}
+                />
+                <Sparkles 
+                  className={`absolute -bottom-4 -left-6 h-4 w-4 text-yellow-300 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '1.4s' }}
+                />
+                <Sparkles 
+                  className={`absolute -bottom-4 -right-6 h-4 w-4 text-yellow-300 fill-current animate-pulse ${
+                    showGoldenStar ? 'animate-bounce' : ''
+                  }`} 
+                  style={{ animationDelay: '1.6s' }}
+                />
               </div>
             </div>
-
-            {/* Enhanced subtitle with animation */}
-            <p className="text-xl text-orange-700 max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-500">
-              Discover the most loved recipes from our community of passionate home cooks
-            </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredRecipes.map((recipe) => (
-              <Link key={recipe.id} href={`/recipes/${recipe.id}`} className="group">
-                <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-105 group">
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={recipe.image_url || "/placeholder.svg"}
-                      alt={recipe.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-semibold text-orange-900">{recipe.rating ?? "-"}</span>
+
+          {/* Featured Recipes Content */}
+          <div 
+            className={`transition-all duration-700 ${
+              showFeaturedContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            <div className="text-center mb-16">
+              {/* Enhanced Featured Recipes Title */}
+              <div className="relative mb-8">
+
+                {/* Main title with enhanced styling */}
+                <div className="relative">
+                  <h2 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-orange-600 via-orange-700 to-amber-600 bg-clip-text text-transparent mb-2 animate-in slide-in-from-bottom duration-700">
+                    Featured Recipes
+                  </h2>
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
+                    <div className="relative">
+                      <ChefHat className="h-8 w-8 text-orange-600" />
                     </div>
+                    <div className="h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent flex-1 max-w-20"></div>
                   </div>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
-                      {recipe.title}
-                    </CardTitle>
-                    <CardDescription className="text-orange-600">
-                      by {recipe.chef_id && chefs[recipe.chef_id] ? `${chefs[recipe.chef_id].first_name} ${chefs[recipe.chef_id].last_name}` : "Unknown"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{recipe.cook_time ? `${recipe.cook_time} min` : "-"}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-4 w-4" />
-                        <span>{recipe.servings ? `${recipe.servings} servings` : "-"}</span>
+                </div>
+              </div>
+
+              {/* Enhanced subtitle with animation */}
+              <p className="text-xl text-orange-700 max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-500">
+                Discover the most loved recipes from our community of passionate home cooks
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredRecipes.map((recipe) => (
+                <Link key={recipe.id} href={`/recipes/${recipe.id}`} className="group">
+                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 hover:scale-105 group">
+                    <div className="relative overflow-hidden">
+                      <Image
+                        src={recipe.image_url || "/placeholder.svg"}
+                        alt={recipe.title}
+                        width={300}
+                        height={200}
+                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1 shadow-lg">
+                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                        <span className="text-sm font-semibold text-orange-900">{recipe.rating ?? "-"}</span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(recipe.tags || []).slice(0, 3).map((tag: string) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="bg-orange-100 text-orange-700 text-xs hover:bg-orange-200 transition-colors"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-orange-900 line-clamp-2 group-hover:text-orange-700 transition-colors">
+                        {recipe.title}
+                      </CardTitle>
+                      <CardDescription className="text-orange-600">
+                        by {recipe.chef_id && chefs[recipe.chef_id] ? `${chefs[recipe.chef_id].first_name} ${chefs[recipe.chef_id].last_name}` : "Unknown"}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between mb-4 text-sm text-orange-700">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{recipe.cook_time ? `${recipe.cook_time} min` : "-"}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Users className="h-4 w-4" />
+                          <span>{recipe.servings ? `${recipe.servings} servings` : "-"}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(recipe.tags || []).slice(0, 3).map((tag: string) => (
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="bg-orange-100 text-orange-700 text-xs hover:bg-orange-200 transition-colors"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
