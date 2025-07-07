@@ -142,3 +142,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Supabase Storage
 - [Supabase Storage File Upload](https://supabase.com/docs/guides/storage/uploads/standard-uploads)
 - [Supabase Storage Retrieve File Public Url](https://supabase.com/docs/reference/javascript/storage-from-getpublicurl)
+
+### Supabase Subscription
+- [How to create Subscribe to Newsletter with Reactjs and Supabase](https://dev.to/motuncoded/how-to-create-subscribe-to-newsletter-with-reactjs-and-supabase-2c44)
