@@ -9,6 +9,7 @@ A modern, full-stack personal cookbook web application for organizing, sharing, 
 | **Frontend** | Next.js 14+ (App Router) | React framework with SSR and routing |
 | **Language** | TypeScript | Type safety and developer experience |
 | **Backend** | Supabase | Authentication, database, and file storage |
+| **Data Fetching** | SWR | Data fetching, caching, and synchronization |
 | **Styling** | Tailwind CSS | Utility-first CSS framework |
 | **UI Components** | Radix UI | Accessible, unstyled React primitives |
 | **Deployment** | Vercel | Hosting and continuous deployment |
@@ -22,14 +23,19 @@ chef-next-door/
 │   ├── login/             # Login page
 │   ├── register/          # Registration page
 │   ├── recipes/           # Recipe management pages
+│   ├── my-recipes/        # User's personal recipes
 │   ├── settings/          # User settings
-│   └── layout.tsx         # Root layout
+│   └── layout.tsx         # Root layout with SWR provider
 ├── components/            # Reusable React components
-│   └── ui/               # Atomic UI components (Button, Input, etc.)
+│   ├── ui/               # Atomic UI components (Button, Input, etc.)
+│   └── SWRProvider.tsx   # SWR configuration wrapper
 ├── lib/                  # Utility functions and configurations
 ├── public/               # Static assets
 ├── supabase/            # Database migrations and config
-├── utils/supabase/      # Supabase client helpers
+├── utils/               # Utility functions and API layer
+│   ├── api/             # SWR-integrated API functions
+│   │   └── api.ts       # Centralized API with custom hooks
+│   └── supabase/        # Supabase client helpers
 └── types/               # TypeScript type definitions
 ```
 
@@ -103,15 +109,6 @@ chef-next-door/
 3. Add your environment variables in the Vercel dashboard
 4. Deploy automatically on every push to main branch
 
-### Other Platforms
-
-This Next.js application can be deployed on any platform that supports Node.js:
-
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
-
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:
@@ -129,7 +126,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📝 TODO
 
 - Comments function
-- "My recipes" section
 - Change Password function
 - Delete account function
 

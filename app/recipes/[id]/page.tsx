@@ -1,77 +1,62 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-// import { Textarea } from "@/components/ui/textarea"
-// import { Separator } from "@/components/ui/separator"
 import { Clock, Users, Star, Heart, Share2, Bookmark } from "lucide-react"
 import Navigation from "@/components/Navigation"
-import { createClient } from "@/utils/supabase/client"
 import LoadingScreen from "@/components/ui/loading-screen"
-
-type Recipe = {
-  id: string
-  chef_id: string
-  title: string
-  description: string | null
-  ingredients: string[]
-  instructions: string[]
-  featured: boolean
-  prep_time: number | null
-  cook_time: number | null
-  servings: number | null
-  difficulty_level: string | null
-  cuisine_type: string | null
-  tags: string[]
-  image_url: string | null
-  rating: number
-  total_reviews: number
-  created_at: string
-  updated_at: string
-  profiles?: {
-    id: string
-    first_name: string | null
-    last_name: string | null
-    avatar_url: string | null
-    bio?: string | null
-  }
-}
+import { useRecipe } from "@/utils/api/api"
 
 export default function RecipeDetailPage() {
+  const params = useParams()
+  const router = useRouter()
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
-  const [recipe, setRecipe] = useState<Recipe | null>(null)
-  const [loading, setLoading] = useState(true)
+  
+  // Use SWR to fetch recipe data
+  const { data: recipe, error, isLoading } = useRecipe(params.id as string)
 
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      setLoading(true)
-      const supabase = createClient()
-      // Get recipe id from URL
-      const id = window.location.pathname.split("/").pop()
-      if (!id) return
-      const { data, error } = await supabase
-        .from('recipes')
-        .select(`*, profiles:chef_id(id, first_name, last_name, avatar_url, bio)`)
-        .eq('id', id)
-        .single()
-      if (!error && data) {
-        setRecipe(data as Recipe)
-      }
-      setLoading(false)
-    }
-    fetchRecipe()
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return <LoadingScreen message="Loading recipe..." />
   }
-  if (!recipe) return <div>Recipe not found.</div>
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error.message || 'Failed to load recipe'}</p>
+          <Button 
+            onClick={() => router.back()} 
+            className="bg-[#e85d04] hover:bg-orange-700 text-white"
+          >
+            Go Back
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!recipe) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-orange-700 mb-4">Recipe not found</p>
+          <Button 
+            onClick={() => router.back()} 
+            className="bg-[#e85d04] hover:bg-orange-700 text-white"
+          >
+            Go Back
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
@@ -97,14 +82,16 @@ export default function RecipeDetailPage() {
                 {/* Author Info */}
                 <div className="flex items-center space-x-4 mb-6">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={recipe.profiles?.avatar_url ?? undefined} alt={recipe.profiles?.first_name ?? undefined} />
+                    <AvatarImage src={recipe.chef?.avatar_url || "/placeholder.svg"} alt={`${recipe.chef?.first_name || 'Chef'}`} />
                     <AvatarFallback className="bg-orange-100 text-orange-700">
-                      {`${recipe.profiles?.first_name ?? ""}${recipe.profiles?.last_name ? " " + recipe.profiles.last_name[0] : ""}`.trim()}
+                      {recipe.chef?.first_name ? recipe.chef.first_name.charAt(0).toUpperCase() : 'C'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-orange-900">{recipe.profiles?.first_name} {recipe.profiles?.last_name}</p>
-                    <p className="text-sm text-orange-600">{recipe.profiles?.bio}</p>
+                    <p className="font-semibold text-orange-900">
+                      {recipe.chef ? `${recipe.chef.first_name} ${recipe.chef.last_name}` : 'Chef'}
+                    </p>
+                    <p className="text-sm text-orange-600">Recipe Creator</p>
                   </div>
                 </div>
 
@@ -128,7 +115,7 @@ export default function RecipeDetailPage() {
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {recipe.tags.map((tag) => (
+                  {(recipe.tags || []).map((tag) => (
                     <Badge key={tag} variant="secondary" className="bg-orange-100 text-orange-700">
                       {tag}
                     </Badge>

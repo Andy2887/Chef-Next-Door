@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -30,107 +30,42 @@ import {
   Calendar,
   TrendingUp,
 } from "lucide-react"
-import { createClient } from "@/utils/supabase/client"
 import Navigation from "@/components/Navigation"
 import { SuccessNotification } from "@/components/ui/success-notification"
 import { useRouter } from "next/navigation"
 import LoadingScreen from "@/components/ui/loading-screen"
-
-interface Recipe {
-  id: string
-  title: string
-  description: string | null
-  image_url: string | null
-  cook_time: number | null
-  prep_time: number | null
-  servings: number | null
-  rating: number
-  total_reviews: number
-  difficulty_level: string | null
-  tags: string[] | null
-  featured: boolean
-  created_at: string
-  updated_at: string
-}
-
-interface Profile {
-  id: string
-  email: string
-  first_name: string
-  last_name: string
-  avatar_url: string | null
-  bio: string | null
-  rating: number
-  total_reviews: number
-  num_recipes: number
-  created_at: string
-}
+import { useProfile, useUserRecipes, swrMutations, Recipe } from "@/utils/api/api"
 
 export default function MyRecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("newest")
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [recipes, setRecipes] = useState<Recipe[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const supabase = createClient()
-        
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (!user) {
-          router.push('/auth/signin')
-          return
-        }
+  // SWR hooks
+  const { 
+    data: profile, 
+    error: profileError, 
+    isLoading: profileLoading 
+  } = useProfile()
+  
+  const { 
+    data: recipes = [], 
+    error: recipesError, 
+    isLoading: recipesLoading 
+  } = useUserRecipes()
 
-        // Fetch user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
+  const loading = profileLoading || recipesLoading
+  const error = profileError || recipesError
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError)
-          setError('Failed to load profile')
-          return
-        }
-
-        setProfile(profileData)
-
-        // Fetch user's recipes
-        const { data: recipesData, error: recipesError } = await supabase
-          .from('recipes')
-          .select('*')
-          .eq('chef_id', user.id)
-          .order('created_at', { ascending: false })
-
-        if (recipesError) {
-          console.error('Error fetching recipes:', recipesError)
-          setError('Failed to load recipes')
-          return
-        }
-
-        setRecipes(recipesData || [])
-      } catch (err) {
-        console.error('Unexpected error:', err)
-        setError('An unexpected error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUserData()
-  }, [router])
+  // Handle authentication redirect
+  if (profileError?.message === 'User not authenticated') {
+    router.push('/login')
+    return null
+  }
 
   const getDifficultyColor = (difficulty: string | null) => {
     switch (difficulty?.toLowerCase()) {
@@ -179,45 +114,8 @@ export default function MyRecipesPage() {
 
     setDeleting(true)
     try {
-      const supabase = createClient()
+      await swrMutations.deleteRecipe(recipeToDelete)
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        setError('User not authenticated')
-        return
-      }
-
-      const { error } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('id', recipeToDelete)
-
-      if (error) {
-        console.error('Error deleting recipe:', error)
-        setError('Failed to delete recipe')
-        return
-      }
-
-      // Update profile recipe count in Supabase using the decrement function
-      const { error: profileError } = await supabase.rpc('decrement_recipe_count', {
-        user_id: user.id
-      })
-      
-      if (profileError) {
-        console.error('Error updating profile recipe count:', profileError)
-        // Don't fail the deletion if profile update fails
-      }
-
-      // Remove recipe from state
-      setRecipes(prev => prev.filter(recipe => recipe.id !== recipeToDelete))
-      
-      // Update profile recipe count in local state
-      if (profile) {
-        setProfile(prev => prev ? { ...prev, num_recipes: prev.num_recipes - 1 } : null)
-      }
-
       // Show success notification
       setShowSuccessNotification(true)
       
@@ -225,8 +123,8 @@ export default function MyRecipesPage() {
       setDeleteDialogOpen(false)
       setRecipeToDelete(null)
     } catch (err) {
-      console.error('Unexpected error deleting recipe:', err)
-      setError('An unexpected error occurred while deleting recipe')
+      console.error('Error deleting recipe:', err)
+      // Handle error appropriately - you could show a toast or error message
     } finally {
       setDeleting(false)
     }
@@ -352,7 +250,7 @@ export default function MyRecipesPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-600 mb-4">{error.message || 'An error occurred'}</p>
           <Button onClick={() => window.location.reload()} className="bg-[#e85d04] hover:bg-orange-700 text-white">
             Try Again
           </Button>

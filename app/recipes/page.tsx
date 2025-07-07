@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,57 +10,43 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChefHat, Clock, Users, Star, Heart, Sparkles } from "lucide-react"
 import Navigation from "@/components/Navigation"
-import { createClient } from "@/utils/supabase/client"
 import LoadingScreen from "@/components/ui/loading-screen"
-
-type Recipe = {
-  id: string
-  chef_id: string
-  title: string
-  description: string | null
-  ingredients: string[]
-  instructions: string[]
-  featured: boolean
-  prep_time: number | null
-  cook_time: number | null
-  servings: number | null
-  difficulty_level: string | null
-  cuisine_type: string | null
-  tags: string[]
-  image_url: string | null
-  rating: number
-  total_reviews: number
-  created_at: string
-  updated_at: string
-  profiles?: {
-    id: string
-    first_name: string | null
-    last_name: string | null
-    avatar_url: string | null
-  }
-}
+import { useAllRecipes, Recipe } from "@/utils/api/api"
 
 export default function RecipesDashboard() {
-  const [recipes, setRecipes] = useState<Recipe[]>([])
-  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  
+  // SWR hook to fetch all recipes
+  const { data: recipes = [], error, isLoading } = useAllRecipes()
 
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('recipes')
-        .select(`*, profiles:chef_id(id, first_name, last_name, avatar_url)`)
-        .order('created_at', { ascending: false })
-      if (!error && data) {
-        setRecipes(data as Recipe[])
-      }
-      setLoading(false)
-    }
-    fetchRecipes()
-  }, [])
+  if (isLoading) {
+    return <LoadingScreen message="Loading recipes..." />
+  }
 
-  const featuredRecipes = recipes.filter((r) => r.featured)
-  const latestRecipes = recipes.filter((r) => !r.featured)
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error.message || 'Failed to load recipes'}</p>
+          <Button onClick={() => window.location.reload()} className="bg-[#e85d04] hover:bg-orange-700 text-white">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Filter recipes based on search query
+  const filteredRecipes = searchQuery 
+    ? recipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : recipes
+
+  const featuredRecipes = filteredRecipes.filter((r) => r.featured)
+  const latestRecipes = filteredRecipes.filter((r) => !r.featured)
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -116,13 +102,13 @@ export default function RecipesDashboard() {
           </CardDescription>
           <div className="flex items-center space-x-2 mt-2">
             <Avatar className="h-6 w-6">
-              <AvatarImage src={recipe.profiles?.avatar_url ?? undefined} alt={recipe.profiles?.first_name ?? undefined} />
+              <AvatarImage src={recipe.chef?.avatar_url || "/placeholder.svg"} alt={`${recipe.chef?.first_name || 'Chef'}`} />
               <AvatarFallback className="bg-orange-100 text-orange-700 text-xs">
-                {`${recipe.profiles?.first_name ?? ""}${recipe.profiles?.last_name ? " " + recipe.profiles.last_name[0] : ""}`.trim()}
+                {recipe.chef?.first_name ? recipe.chef.first_name.charAt(0).toUpperCase() : 'C'}
               </AvatarFallback>
             </Avatar>
             <span className="text-sm text-orange-600">
-              by {recipe.profiles?.first_name} {recipe.profiles?.last_name}
+              by {recipe.chef ? `${recipe.chef.first_name} ${recipe.chef.last_name}` : 'Chef'}
             </span>
           </div>
         </CardHeader>
@@ -142,7 +128,7 @@ export default function RecipesDashboard() {
             </div>
           </div>
           <div className="flex flex-wrap gap-1">
-            {recipe.tags.slice(0, 3).map((tag: string) => (
+            {(recipe.tags || []).slice(0, 3).map((tag: string) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -157,10 +143,6 @@ export default function RecipesDashboard() {
     </Link>
   )
 
-  if (loading) {
-    return <LoadingScreen message="Loading recipes..." />
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
       <Navigation />
@@ -171,9 +153,17 @@ export default function RecipesDashboard() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-8">
             <h1 className="text-6xl font-bold text-orange-900 mb-4">Browse Recipes</h1>
-            <p className="text-xl text-orange-700 max-w-2xl mx-auto">
+            <p className="text-xl text-orange-700 max-w-2xl mx-auto mb-8">
               Discover amazing recipes from our community of passionate home chefs
             </p>
+            <div className="max-w-md mx-auto">
+              <Input 
+                placeholder="Search recipes, ingredients, or tags..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border-orange-200 focus:border-orange-400 bg-white/90 backdrop-blur-sm" 
+              />
+            </div>
           </div>
         </div>
       </section>
